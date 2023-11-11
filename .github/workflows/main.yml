@@ -1,0 +1,32 @@
+name: Typeset article
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+env:
+  DEBIAN_FRONTEND: noninteractive
+jobs:
+  typeset-paper:
+    name: Typeset article
+    runs-on: ubuntu-latest
+    container:
+      image: texlive/texlive:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Typeset article
+        run: latexmk -pdf -Werror main.tex
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: main
+          path: main.pdf
+      - name: Create a prerelease
+        if: github.ref == 'refs/heads/main'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          title: The latest version
+          automatic_release_tag: latest
+          prerelease: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files: main.pdf
