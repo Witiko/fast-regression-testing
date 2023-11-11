@@ -6,25 +6,31 @@
   \bigExample
   { s O{} m }
   {
-    \IfBooleanTF{#1} {
-      \big_example_star:nn
-    }{
-      \big_example:nn
-     }
-            { #2 }
-            { #3 }
+    \IfBooleanTF
+      { #1 }
+      {
+        \big_example_star:nn
+      }
+      {
+        \big_example:nn
+      }
+    { #2 }
+    { #3 }
  }
 \NewDocumentCommand
   \example
   { s O{} m }
   {
-    \IfBooleanTF{#1} {
-      \example_star:nn
-    }{
-      \example:nn
-     }
-            { #2 }
-            { #3 }
+    \IfBooleanTF
+      { #1 }
+      {
+        \example_star:nn
+      }
+      {
+        \example:nn
+      }
+    { #2 }
+    { #3 }
   }
 \NewDocumentCommand
   \file
@@ -163,7 +169,7 @@
   \example_star:nn
   {
     \begin{minipage}[m]{0.65\linewidth}
-  \__enable_fancyvrb_tikzmarks:n {#2}
+    \__enable_fancyvrb_tikzmarks:n {#2}
     \VerbatimInput{examples/#2}
     \nointerlineskip
     #1
@@ -176,12 +182,13 @@
 \str_new:N \l__fancyvrb_tikzmark_prefix_str
 \cs_new:Nn \__enable_fancyvrb_tikzmarks:n {
   % Tikz node to fancy vrb
-    \str_gset:Nn \l__fancyvrb_tikzmark_prefix_str {#1}
-    \str_greplace_all:Nnn  \l__fancyvrb_tikzmark_prefix_str  {.} {-}% remove dots to avoid confusion with anchors
+  \str_gset:Nn \l__fancyvrb_tikzmark_prefix_str {#1}
+  \str_greplace_all:Nnn  \l__fancyvrb_tikzmark_prefix_str  {.} {-}% remove dots to avoid confusion with anchors
   \def\FV@LeftListNumber{%
     \dim_set:Nn \l_tmpa_dim {\linewidth}
-      \tikz[anchor=base~west,overlay,remember~picture,baseline={(0,0)}]\node[inner~sep=\z@,outer~sep=\z@,minimum~width=\dim_use:N \l_tmpa_dim](\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine}){\strut};
-      \exp_args:Nx \tl_show:n {(\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine})}
+    \tikz[anchor=base~west,overlay,remember~picture,baseline={(0,0)}]
+    \node[inner~sep=\z@,outer~sep=\z@,minimum~width=\dim_use:N \l_tmpa_dim](\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine}){\strut};
+    \exp_args:Nx \tl_show:n {(\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine})}
   }
 }
 \cs_new:Nn
@@ -200,17 +207,17 @@
  \cs_new:Nn
   \big_example_star:nn
   {
-     \begin{minipage}[t]{\linewidth}
+    \begin{minipage}[t]{\linewidth}
     \__enable_fancyvrb_tikzmarks:n {#2}
-     \VerbatimInput{examples/#2}
-     \nointerlineskip
-      #1
-     \end{minipage}
-     \hspace{-0.1\linewidth}
-     \raisebox{-35pt}{\smash{\begin{minipage}[t]{0.1\linewidth}
-     \icon_with_label:n
-       { #2 }
-     \end{minipage}}}
+    \VerbatimInput{examples/#2}
+    \nointerlineskip
+     #1
+    \end{minipage}
+    \hspace{-0.1\linewidth}
+    \raisebox{-35pt}{\smash{\begin{minipage}[t]{0.1\linewidth}
+    \icon_with_label:n
+      { #2 }
+    \end{minipage}}}
   }
 \RequirePackage{graphicx}
 \RequirePackage{amssymb}
