@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: texlive/texlive:latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
