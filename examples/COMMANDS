@@ -1,0 +1,3 @@
+pdftex verbatim.tex --shell-escape
+xetex  verbatim.tex --shell-escape
+luatex verbatim.tex

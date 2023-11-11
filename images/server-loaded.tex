@@ -1,0 +1,8 @@
+\begin{tikzpicture}[every node/.style={inner sep=0pt}]
+\foreach \coord/\name in {{(0.1,0)}/first,{(2.5,0.3)}/second,{(5,0)}/third} {
+	\node (server) at \coord {\includegraphics[scale=0.4]{images/server}};
+	\node[fill=white,anchor=north] (file) at (server.-20) {{\fontsize{30}{30}\selectfont\faFileTextO}};
+	\node[below=.3ex,font=\ttfamily] at (file.south) {\name.test};
+}
+\end{tikzpicture}%
+\hspace{0.175cm}

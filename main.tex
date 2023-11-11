@@ -1,0 +1,266 @@
+% $Date: 2022/12/30 17:24:03 $
+% This template file is public domain.
+%
+% TUGboat class documentation is at:
+%   http://mirrors.ctan.org/macros/latex/contrib/tugboat/ltubguid.pdf
+% or
+%   texdoc tugboat
+
+\documentclass[final]{ltugboat}
+
+\usepackage{amsmath}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage[hidelinks,pdfa]{hyperref}
+\usepackage{hologo}
+\usepackage{fontawesome}
+\usepackage{fancyvrb,fvextra}
+\fvset{breaklines}
+\usepackage{tikz}
+\usetikzlibrary{shapes,decorations.pathreplacing}
+\usepackage{./examples}
+\def\url{\tbsurl}
+
+%%% Start of metadata %%%
+\title{Fast Regression Testing of \TeX{} Packages: The Unreasonable Effectiveness of Batching}
+
+% repeat info for each author; comment out items that don't apply.
+\author{Vít Starý Novotný}
+\address{Studená 453/15 \\ Brno, 63800 \\ Czech Republic}
+\netaddress{witiko (at) mail dot muni dot cz}
+\personalURL{github.com/witiko}
+
+\author{Marei Peischl}
+\address{Gneisenaustr. 18 \\ Hamburg, 20253 \\ Germany}
+\netaddress{marei (at) peitex dot de}
+\personalURL{peitex.de}
+
+%%% End of metadata %%%
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In version 3.0.0 of the Markdown package for \TeX, the number of tests increased $5.5\times$. This caused the tests to run for up to 15 hours, which slowed down the development cycle. In this article, we describe a novel technique for batching test files and we show that our technique increases the speed of tests by up to $21\times$. We also discuss how our technique can speed up other testing frameworks for \TeX{} packages such as l3build. Our conversation is approachable, aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
+\end{abstract}
+
+\section{Introduction}
+Like many other \TeX{} packages, the Markdown package for \TeX{} comes with a test suite. Developers can use the test suite to verify that their changes do not break existing functionality. Changes submitted to the code repository of the Markdown package at GitHub are also automatically tested. The tests should take no longer than a couple minutes, so that developers can use them for real-time feedback.
+
+After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about $5.5\times$). This has caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
+
+In version 3.0.0 of the Markdown package, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a $60\times$ speed increase and which makes the tests practically useful to developers.
+
+\looseness=-1
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} and \ref{sec:techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments with the batching of test files and their results. In Section~\ref{sec:related-work}, we describe other test frameworks and how they might adapt the techniques used by our framework. We conclude in sections~\ref{sec:conclusion} and \ref{sec:future-work} by summarizing our contributions and outlining future work.
+
+\section{On-disk files}
+\label{sec:on-disk-files}
+
+\looseness=-1
+In this section, we describe the on-disk files used in our framework: test files, formats, commands, and templates. We also show how we use them for testing.
+
+\subsection{Test files}
+\label{sec:test-files}
+
+\looseness=-1
+The Markdown package converts markdown text to \TeX{} commands. To validate the conversion, our testing framework redefines the \TeX{} commands to produce output in the \texttt{.log} file, which we can examine.
+
+A \emph{test file} consists of a) \TeX{} code that configures the Markdown package, b) markdown text, and c) the expected output in the \texttt{.log} file.
+
+See example test file \file{strike-through.test} that tests the strike-through syntax extension:
+
+\smallskip
+\noindent
+\example*[\input images/strike-through.tex]{strike-through.test}
+
+\subsection{Formats, commands, and templates}
+\label{sec:formats-commands-and-templates}
+
+\looseness=-1
+The Markdown package supports several combinations of \TeX{} formats and engines. For each \TeX{} format, there are also several ways to input markdown text. Our testing framework ensures that a markdown text always produces the same output.
+
+A \emph{format} consists of one or more a) \emph{commands} that can be used to typeset documents in a \TeX{} format using different \TeX{} engines and b) \emph{templates} that specify the different ways in which markdown text can be input with the \TeX{} format.
+
+Here is an example format \texttt{plain} with commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines:
+
+\smallskip
+\noindent
+\example{COMMANDS.m4}
+
+\smallskip
+\noindent
+The format \texttt{plain} also contains two templates. One uses the \cs{markdownInput} \TeX{} macro and the other one uses the \cs{markdownBegin} and \texttt{End} \TeX{} macros:
+
+\smallskip
+\noindent
+\example{input.tex.m4}
+
+\smallskip
+\exampleSeparator
+
+\smallskip
+\noindent
+\example{verbatim.tex.m4}
+
+\subsection{Materialized templates and commands}
+\label{sec:materialized-templates-and-commands}
+
+During testing, the texts \texttt{TEST\_SETUP\_FILENAME} and \texttt{TEST\_INPUT\_FILENAME} in a template are replaced with names of files that contain the \TeX{} code and the markdown text from a test file. The text \texttt{undivert (TEST\_INPUT\_FILENAME)} is replaced with the literal markdown text from the test file. After the replacement, the template has been \emph{materialized}.
+
+Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-commands-and-templates} after it has been materialized with the test file \file{strike-through.test} from Section~\ref{sec:test-files}:
+
+\smallskip
+\noindent
+\combineFiles{verbatim.tex.m4}{strike-through.test} \\[0.4em]
+\example{verbatim.tex}
+
+\smallskip
+\exampleSeparator
+
+\smallskip
+\noindent
+\example{test-setup.tex}
+
+\smallskip
+
+After a template has been materialized, the text \texttt{TEST\_FILENAME} in a command is replaced with the filename of the materialized template. After the replacement, the command has also been materialized.
+
+Here are the commands \file{COMMANDS.m4} from Section~\ref{sec:formats-commands-and-templates} after they have been materialized:
+
+\smallskip
+\noindent
+\combineFiles{COMMANDS.m4}{verbatim.tex} \\[0.8em]
+\example{COMMANDS}
+
+\smallskip
+
+\noindent
+During testing, the materialized commands are executed. Each command produces a \texttt{.log} file, which is compared to the expected output from the test file.
+
+\section{Techniques}
+\label{sec:techniques}
+In this section, we describe the computational techniques of multiprocessing and the batching of test files. We also show how we use these techniques to increase the speed of testing in our framework.
+
+\subsection{Multiprocessing}
+\label{sec:multiprocessing}
+Whereas \TeX{} only uses a single \acro{CPU}, modern computers contain several \acro{CPU}s. Therefore, we can increase the speed of testing by using \emph{multiprocessing}, where each \acro{CPU} processes a different test file:
+
+\smallskip
+\noindent
+\begingroup
+\centering
+\input images/server-loaded.tex
+\par
+\endgroup
+
+\smallskip
+\noindent
+Multiprocessing with $N$ \acro{CPU}s speeds up testing $N\times$.
+
+\subsection{Batching of test files}
+At the beginning of a \TeX{} document, \TeX{} packages, fonts, Lua scripts, and other assets are initialized, which slows down testing:
+
+\smallskip
+\noindent
+\example*[\input images/verbatim.tex]{verbatim.tex}
+
+\smallskip
+
+To increase the speed of testing, we can amortize the cost of initialization by materializing a template with a \emph{batch} of several test files:
+
+\medskip
+\noindent
+\combineFiles{input.tex.m4}{first.test, second.test, third.test} \\
+\example{input.tex}
+
+\smallskip
+\noindent
+Batching $N$ test files reduces the cost of initialization $N\times$. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
+
+\section{Implementation}
+\label{sec:implementation}
+In this section, we describe the implementation of our testing framework before and after version 3.0.0 of the Markdown package. Furthermore, the batching of test files caused issues with error reporting and multiprocessing. In this section, we outline the issues and how we addressed them in our implementation.
+
+\begin{figure*}
+\bigExample*[\input images/test.tex]{test.sh}
+\caption{The batch script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes the materialized commands, and \linebreak c) compares the \texttt{.log} file against the expected output from the test file.}
+\label{fig:test.sh}
+\end{figure*}
+
+\subsection{Before and after Markdown 3.0.0}
+
+Before Markdown 3.0.0, our testing framework was implemented by shell script \file{test.sh}, see Figure~\ref{fig:test.sh}.
+
+At first, \file{test.sh} processed test files sequentially and did not use the techniques from Section~\ref{sec:techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
+
+\begin{verbatim}
+$ find -name '*.test' | parallel ./test.sh
+\end{verbatim}
+
+\looseness=-1
+In Markdown 3.0.0, we rewrote our testing framework in the Python programming language~\cite{starynovotny2023implement}. This made our testing framework platform-independent and allowed us to implement the batching of test files.
+% Furthermore, using Python allowed us to customize the logs produced by our testing framework, making them easier to understand for developers.
+
+\subsection{Batch bisection}
+
+When we test batches of test files, a \texttt{.log} file is split into sections corresponding to individual test files and compared with expected test file outputs. However, if a fatal error occurs, the \texttt{.log} file may become malformed. In order to identify the test file responsible for the error, we \emph{bisect the batch}.
+
+Here is how we would bisect a batch of test files \file{first.test}, \file{second.test}, and \file{third.test}, where \file{second.test} causes a fatal error:
+
+\medskip
+\noindent
+\begingroup
+\centering
+\input images/batch-bisection.tex
+\par
+\endgroup
+
+\medskip
+\noindent
+When only one test file out of $N$ causes a fatal error, batch bisection executes at most $2 (\log_2 N + 1)$ commands. This is less than or equal to $N$ for $N\geq8$.
+
+\subsection{Batch size limiting}
+
+With large batch sizes, many \acro{CPU}s will be unused, which decreases the speed of testing:
+
+\smallskip
+\noindent
+\begingroup
+\centering
+\input images/server-idle.tex
+\par
+\endgroup
+
+\smallskip
+\noindent
+\looseness=-1
+We \emph{limit the batch size}, so that all \acro{CPU}s are used. This increases the speed of testing from the user's perspective, although the \acro{CPU}s do more work overall.
+
+\section{Experiments}
+\label{sec:experiments}
+
+\section{Results}
+\label{sec:results}
+
+\section{Related work}
+\label{sec:related-work}
+
+The techniques of batching and batch bisection were perhaps first used with \TeX{} in the \acro{ARQ}Math shared evaluation tasks for the large-scale indexing of math formulae from scientific articles and Q\&A forums.
+
+In the first \acro{ARQ}Math task, the \acro{MIRMU} team utilized the \LaTeX ML tool to convert \TeX{} formulae into the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to overhead issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, large batches led to many formulae being lost due to errors. To mitigate this, \acro{MIRMU} implemented batch bisection to recover correct formulae.\footnote{See \tburl{https://github.com/MIR-MU/ARQMath-data-preprocessing}, file \texttt{scripts/latex\_tsv\_to\_cmml\_and\_pmml\_tsv.py}.} The combination of batching and batch bisection allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\section{Future work}
+\label{sec:future-work}
+
+\section*{Acknowledgements}
+
+\bibliographystyle{tugboat}
+\bibliography{main}
+\vfill
+
+\makesignature
+\end{document}

@@ -1,0 +1,8 @@
+\markdownSetup
+  { strikeThrough }
+<<<
+Hello ~~world~~!
+>>>
+BEGIN document
+strikeThrough: world
+END document

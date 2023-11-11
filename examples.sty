@@ -1,0 +1,239 @@
+\ProvidesExplPackage{examples}{2023-10-25}{1.0.0}{Helper code for examples in my article}
+
+% Interface
+\RequirePackage{xparse}
+\NewDocumentCommand
+  \bigExample
+  { s O{} m }
+  {
+    \IfBooleanTF{#1} {
+      \big_example_star:nn
+    }{
+      \big_example:nn
+     }
+            { #2 }
+            { #3 }
+ }
+\NewDocumentCommand
+  \example
+  { s O{} m }
+  {
+    \IfBooleanTF{#1} {
+      \example_star:nn
+    }{
+      \example:nn
+     }
+            { #2 }
+            { #3 }
+  }
+\NewDocumentCommand
+  \file
+  { m }
+  {
+    \file:n
+      { #1 }
+  }
+\NewDocumentCommand
+  \largeIcon
+  { m }
+  {
+    \large_icon:n
+      { #1 }
+  }
+\NewDocumentCommand
+  \exampleSeparator
+  { }
+  {
+    \color_group_begin:
+    \color_select:n
+      { .!50 }
+    \hrule
+    \color_group_end:
+  }
+\NewDocumentCommand
+  \combineFiles
+  { m m }
+  {
+    \combine_files:nn
+      { #1 }
+      { #2 }
+  }
+% Implementation
+\cs_new:Nn
+  \small_icon:n
+  {
+    \icon:n
+      { #1 }
+    \raisebox{-1.4pt}{\begin{tikzpicture}
+      \fill[white] (-0.15,-0.16) -- (0.14,-0.16) -- (0.14,0.09) -- (0.05,0.16) -- (-0.15,0.16) -- cycle;
+      \node[inner~sep=0pt, outer~sep=0pt] at (0,0) {\tl_use:N \l_tmpa_tl};
+    \end{tikzpicture}}
+  }
+\cs_new:Nn
+  \large_icon:n
+  {
+    \icon:n
+      { #1 }
+    \group_begin:
+    \regex_match:nnTF
+      { , }
+      { #1 }
+      {
+        \fontsize{30}{30}
+        \selectfont
+        \raisebox{-5.5pt}{\begin{tikzpicture}
+          \fill[white] (0.6,-0.35) rectangle (1.4,-1.35);
+          \node[inner~sep=0pt, outer~sep=0pt] at (1,-0.85) {\tl_use:N \l_tmpa_tl};
+          \fill[white] (0.9,-0.05) rectangle (1.7,-1.05);
+          \node[inner~sep=0pt, outer~sep=0pt] at (1.3,-0.55) {\tl_use:N \l_tmpa_tl};
+          \fill[white] (1.2,0.35) rectangle (2,-0.65);
+          \node[inner~sep=0pt, outer~sep=0pt] at (1.6,-0.15) {\tl_use:N \l_tmpa_tl};
+        \end{tikzpicture}}
+        \vspace{0.05cm}
+      }
+      {
+        \fontsize{50}{50}
+        \selectfont
+        \tl_use:N \l_tmpa_tl
+      }
+    \group_end:
+  }
+\cs_new:Nn
+  \icon:n
+  {
+    \regex_match:nnTF
+      { \.test$ }
+      { #1 }
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          { \faFileTextO }
+      }
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          { \faFileCodeO }
+      }
+  }
+\cs_new:Nn
+  \icon_with_label:n
+  {
+    \centering
+    \large_icon:n
+      { #1 }
+    \\ [5pt]
+    \tl_set:Nn
+      \l_tmpa_tl
+      { #1 }
+    \regex_replace_all:nnN
+      { - }
+      { \c{discretionary}{-}{}{-} }
+      \l_tmpa_tl
+    \regex_replace_all:nnN
+      { , }
+      { \c{textrm}{\0} }
+      \l_tmpa_tl
+    \tl_show:N
+      \l_tmpa_tl
+    \exp_args:NV
+      \texttt
+      \l_tmpa_tl
+  }
+\cs_new:Nn
+  \file:n
+  {
+    \small_icon:n
+      { #1 }
+    \,
+    \texttt { #1 }
+  }
+\cs_new:Nn
+  \example:nn
+  {
+    \begin{minipage}[m]{0.65\linewidth}
+    #1
+    \VerbatimInput{examples/#2}
+    \end{minipage}
+    \begin{minipage}[m]{0.35\linewidth}
+    \icon_with_label:n
+      { #2 }
+    \end{minipage}
+  }
+\cs_new:Nn
+  \example_star:nn
+  {
+    \begin{minipage}[m]{0.65\linewidth}
+  \__enable_fancyvrb_tikzmarks:n {#2}
+    \VerbatimInput{examples/#2}
+    \nointerlineskip
+    #1
+    \end{minipage}
+    \begin{minipage}[m]{0.35\linewidth}
+    \icon_with_label:n
+      { #2 }
+    \end{minipage}
+  }
+\str_new:N \l__fancyvrb_tikzmark_prefix_str
+\cs_new:Nn \__enable_fancyvrb_tikzmarks:n {
+  % Tikz node to fancy vrb
+    \str_gset:Nn \l__fancyvrb_tikzmark_prefix_str {#1}
+    \str_greplace_all:Nnn  \l__fancyvrb_tikzmark_prefix_str  {.} {-}% remove dots to avoid confusion with anchors
+  \def\FV@LeftListNumber{%
+    \dim_set:Nn \l_tmpa_dim {\linewidth}
+      \tikz[anchor=base~west,overlay,remember~picture,baseline={(0,0)}]\node[inner~sep=\z@,outer~sep=\z@,minimum~width=\dim_use:N \l_tmpa_dim](\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine}){\strut};
+      \exp_args:Nx \tl_show:n {(\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine})}
+  }
+}
+\cs_new:Nn
+  \big_example:nn
+  {
+    \begin{minipage}[t]{\linewidth}
+    #1
+    \VerbatimInput{examples/#2}
+    \end{minipage}
+    \hspace{-0.1\linewidth}
+    \raisebox{-5em}{\smash{\begin{minipage}[t]{0.1\linewidth}
+    \icon_with_label:n
+      { #2 }
+    \end{minipage}}}
+  }
+ \cs_new:Nn
+  \big_example_star:nn
+  {
+     \begin{minipage}[t]{\linewidth}
+    \__enable_fancyvrb_tikzmarks:n {#2}
+     \VerbatimInput{examples/#2}
+     \nointerlineskip
+      #1
+     \end{minipage}
+     \hspace{-0.1\linewidth}
+     \raisebox{-35pt}{\smash{\begin{minipage}[t]{0.1\linewidth}
+     \icon_with_label:n
+       { #2 }
+     \end{minipage}}}
+  }
+\RequirePackage{graphicx}
+\RequirePackage{amssymb}
+\cs_new:Nn
+  \combine_files:nn
+  {
+    \begin{minipage}[t]{0.375\linewidth}
+    \icon_with_label:n
+      { #1 }
+    \end{minipage}
+    \hspace{-0.215cm}
+    \begin{minipage}[m]{0.1\linewidth}
+    \centering
+    \raisebox{-43pt}{$+$}
+    \end{minipage}
+    \hspace{-0.215cm}
+    \begin{minipage}[t]{0.375\linewidth}
+    \icon_with_label:n
+      { #2 }
+    \end{minipage}
+    \hspace{-0.215cm}
+    \begin{minipage}[m]{0.1\linewidth}
+    \centering
+    \raisebox{-53pt}{\scalebox{-1.5}[1.5]{\rotatebox[origin=m]{90}{$\Lsh$}}}
+    \end{minipage}
+  }

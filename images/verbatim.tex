@@ -1,0 +1,8 @@
+%\vspace{-5pt}
+\begin{tikzpicture}[remember picture, overlay, 
+		thick,decoration={brace,amplitude=1ex,},
+		every node/.style={anchor=west,right=1.2ex}
+	]
+	\draw[decorate](.8\linewidth,0|-verbatim-tex-1.north east)--node{slow}(.8\linewidth,0|-verbatim-tex-1.south east);
+	\draw[decorate,decoration={pre length=1.5mm,pre=moveto}](.8\linewidth,0|-verbatim-tex-2.north east)--node{fast}(.8\linewidth,0|-verbatim-tex-6.south east);
+\end{tikzpicture}
