@@ -139,8 +139,8 @@
       { , }
       { \c{textrm}{\0} }
       \l_tmpa_tl
-    \tl_show:N
-      \l_tmpa_tl
+%   \tl_show:N
+%     \l_tmpa_tl
     \exp_args:NV
       \texttt
       \l_tmpa_tl
@@ -188,7 +188,7 @@
     \dim_set:Nn \l_tmpa_dim {\linewidth}
     \tikz[anchor=base~west,overlay,remember~picture,baseline={(0,0)}]
     \node[inner~sep=\z@,outer~sep=\z@,minimum~width=\dim_use:N \l_tmpa_dim](\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine}){\strut};
-    \exp_args:Nx \tl_show:n {(\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine})}
+%   \exp_args:Nx \tl_show:n {(\l__fancyvrb_tikzmark_prefix_str-\arabic{FancyVerbLine})}
   }
 }
 \cs_new:Nn
