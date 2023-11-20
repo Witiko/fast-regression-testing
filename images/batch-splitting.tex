@@ -1,23 +1,34 @@
-\fcolorbox{red}{pink}{%
-  \color{red}%
-  \file{first.test}%
-  \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
-  \file{second.test}%
-  \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
-  \file{third.test}%
-}%
-\\[2pt]
+\\[-1.5pt]
+\begin{tikzpicture}
+\node[inner sep=0pt] (box) at (0,0) {
+  \fcolorbox{red}{pink}{%
+    \color{red}%
+    \file{first.test}%
+    \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
+    \file{second.test}%
+    \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
+    \file{third.test}%
+  }%
+};
+\draw[dashed] ($(box.south)+(0pt,-1.5pt)$) -- ($(box.north)+(0pt,1.5pt)$);
+\end{tikzpicture}
+\\[-1pt]
 \fbox{%
   \file{first.test}%
 }%
 \enspace
-\fcolorbox{red}{pink}{%
-  \color{red}%
-  \file{second.test}%
-  \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
-  \file{third.test}%
-}%
-\\[2pt]
+\raisebox{-6.75pt}{\begin{tikzpicture}
+\node[inner sep=0pt] (box) at (0,0) {
+  \fcolorbox{red}{pink}{%
+    \color{red}%
+    \file{second.test}%
+    \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
+    \file{third.test}%
+  }%
+};
+\draw[dashed] ($(box.south)+(2.5pt,-1.5pt)$) -- ($(box.north)+(2.5pt,1.5pt)$);
+\end{tikzpicture}}
+\\[0.5pt]
 \hspace{3pt}%
 caused error%
 \hspace{1pt}%
