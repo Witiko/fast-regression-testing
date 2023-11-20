@@ -202,23 +202,23 @@ $ find -name '*.test' | parallel ./test.sh
 In Markdown 3.0.0, we rewrote our testing framework in the Python programming language~\cite{starynovotny2023implement}. This made our testing framework platform-independent and allowed us to implement the batching of test files.
 % Furthermore, using Python allowed us to customize the logs produced by our testing framework, making them easier to understand for developers.
 
-\subsection{Batch bisection}
+\subsection{Batch splitting}
 
-When we test batches of test files, a \texttt{.log} file is split into sections corresponding to individual test files and compared with expected test file outputs. However, if a fatal error occurs, the \texttt{.log} file may become malformed. In order to identify the test file responsible for the error, we \emph{bisect the batch}.
+When we test batches of test files, a \texttt{.log} file is split into sections corresponding to individual test files and compared with expected test file outputs. However, if a fatal error occurs, the \texttt{.log} file may become malformed. In order to identify the test file responsible for the error, we \emph{split the batch}.
 
-Here is how we would bisect a batch of test files \file{first.test}, \file{second.test}, and \file{third.test}, where \file{second.test} causes a fatal error:
+Here is how we would split a batch of test files \file{first.test}, \file{second.test}, and \file{third.test}, where \file{second.test} causes a fatal error:
 
 \medskip
 \noindent
 \begingroup
 \centering
-\input images/batch-bisection.tex
+\input images/batch-splitting.tex
 \par
 \endgroup
 
 \medskip
 \noindent
-When only one test file out of $N$ causes a fatal error, batch bisection executes at most $2 (\log_2 N + 1)$ commands. This is less than or equal to $N$ for $N\geq8$.
+When only one test file out of $N$ causes a fatal error, batch splitting executes at most $2 (\log_2 N + 1)$ commands. This is less than or equal to $N$ for $N\geq8$.
 
 \subsection{Batch size limiting}
 
@@ -246,9 +246,9 @@ We \emph{limit the batch size}, so that all \acro{CPU}s are used. This increases
 \section{Related work}
 \label{sec:related-work}
 
-The techniques of batching and batch bisection were perhaps first used with \TeX{} in the \acro{ARQ}Math shared evaluation tasks for the large-scale indexing of math formulae from scientific articles and Q\&A forums.
+The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \acro{ARQ}Math shared evaluation tasks for the large-scale indexing of math formulae from scientific articles and Q\&A forums.
 
-In the first \acro{ARQ}Math task, the \acro{MIRMU} team utilized the \LaTeX ML tool to convert \TeX{} formulae into the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to overhead issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, large batches led to many formulae being lost due to errors. To mitigate this, \acro{MIRMU} implemented batch bisection to recover correct formulae.\footnote{See \tburl{https://github.com/MIR-MU/ARQMath-data-preprocessing}, file \texttt{scripts/latex\_tsv\_to\_cmml\_and\_pmml\_tsv.py}.} The combination of batching and batch bisection allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
+In the first \acro{ARQ}Math task, the \acro{MIRMU} team utilized the \LaTeX ML tool to convert \TeX{} formulae into the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to overhead issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, large batches led to many formulae being lost due to errors. To mitigate this, \acro{MIRMU} used batch splitting to recover correct formulae.\footnote{See \tburl{https://github.com/MIR-MU/ARQMath-data-preprocessing}, file \texttt{scripts/latex\_tsv\_to\_cmml\_and\_pmml\_tsv.py}.} The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
 
 \section{Conclusion}
 \label{sec:conclusion}
