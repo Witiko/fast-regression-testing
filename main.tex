@@ -159,6 +159,7 @@ Whereas \TeX{} only uses a single \acro{CPU}, modern computers contain several \
 Multiprocessing with $N$ \acro{CPU}s speeds up testing $N\times$.
 
 \subsection{Batching of test files}
+\label{sec:batching-of-test-files}
 At the beginning of a \TeX{} document, \TeX{} packages, fonts, Lua scripts, and other assets are initialized, which slows down testing:
 
 \smallskip
@@ -230,14 +231,24 @@ With large batch sizes, many \acro{CPU}s will be unused, which decreases the spe
 \noindent
 \begingroup
 \centering
-\input images/server-idle.tex
+\input images/server-without-limiting.tex
 \par
 \endgroup
 
 \smallskip
 \noindent
-\looseness=-1
-We \emph{limit the batch size}, so that all \acro{CPU}s are used. This increases the speed of testing from the user's perspective, although the \acro{CPU}s do more work overall.
+We \emph{limit the batch size}, so that all \acro{CPU}s are used:
+
+\smallskip
+\noindent
+\begingroup
+\centering
+\input images/server-with-limiting.tex
+\par
+\endgroup
+
+\smallskip
+Limiting the batch size increases the speed of testing, because it decreases the batch size for every used \acro{CPU}. However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost, as discussed in Section~\ref{sec:batching-of-test-files}. Therefore, limiting the batch size increases the speed of testing but decreases its energy-efficiency.
 
 \section{Experiments}
 \label{sec:experiments}
