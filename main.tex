@@ -14,6 +14,7 @@
 \usepackage[hidelinks,pdfa]{hyperref}
 \usepackage{hologo}
 \usepackage{fontawesome}
+\usepackage{ragged2e}
 \usepackage{fancyvrb,fvextra}
 \fvset{breaklines}
 \usepackage{tikz}
@@ -51,8 +52,7 @@ After the implementation of the CommonMark standard in version 3.0.0 of the Mark
 
 In version 3.0.0 of the Markdown package, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a $60\times$ speed increase and which makes the tests practically useful to developers.
 
-\looseness=-1
-In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} and \ref{sec:techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments with the batching of test files and their results. In Section~\ref{sec:related-work}, we describe other test frameworks and how they might adapt the techniques used by our framework. We conclude in sections~\ref{sec:conclusion} and \ref{sec:future-work} by summarizing our contributions and outlining future work.
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} and \ref{sec:techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we describe other test frameworks and how they might adapt the techniques used by our framework. We conclude in sections~\ref{sec:conclusion} and \ref{sec:future-work} by summarizing our contributions and outlining future work.
 
 \section{On-disk files}
 \label{sec:on-disk-files}
@@ -179,15 +179,15 @@ To increase the speed of testing, we can amortize the cost of initialization by 
 \noindent
 Batching $N$ test files reduces the cost of initialization $N\times$. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
 
-\section{Implementation}
-\label{sec:implementation}
-In this section, we describe the implementation of our testing framework before and after version 3.0.0 of the Markdown package. Furthermore, the batching of test files caused issues with error reporting and multiprocessing. In this section, we outline the issues and how we addressed them in our implementation.
-
 \begin{figure*}
 \bigExample*[\input images/test.tex]{test.sh}
 \caption{The batch script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes the materialized commands, and \linebreak c) compares the \texttt{.log} file against the expected output from the test file.}
 \label{fig:test.sh}
 \end{figure*}
+
+\section{Implementation}
+\label{sec:implementation}
+In this section, we describe the implementation of our testing framework before and after version 3.0.0 of the Markdown package. Furthermore, the batching of test files caused issues with error reporting and multiprocessing. In this section, we outline the issues and how we addressed them in our implementation.
 
 \subsection{Before and after Markdown 3.0.0}
 
@@ -200,7 +200,7 @@ $ find -name '*.test' | parallel ./test.sh
 \end{verbatim}
 
 \looseness=-1
-In Markdown 3.0.0, we rewrote our testing framework in the Python programming language~\cite{starynovotny2023implement}. This made our testing framework platform-independent and allowed us to implement the batching of test files.
+In Markdown 3.0.0, we rewrote our testing framework in the Python programming language~\cite{novotny2023implement}. This made our testing framework platform-independent and allowed us to implement the batching of test files.
 % Furthermore, using Python allowed us to customize the logs produced by our testing framework, making them easier to understand for developers.
 
 \subsection{Batch splitting}
@@ -253,6 +253,26 @@ Limiting the batch size increases the speed of testing, because it decreases the
 \section{Experiments}
 \label{sec:experiments}
 
+In this section, we describe our experiment with multiprocessing and batching. In our experiment, we aimed to answer the following research questions:
+\begin{enumerate}
+\item What is the speed benefit of multiprocessing?
+\item What is the speed benefit of batching test files?
+\item What is the speed benefit of batch size limiting?
+\end{enumerate}
+
+To answer the research questions, we tested the Markdown package with different numbers of \acro{CPU}s and different batch sizes:
+\begin{itemize}
+\item Numbers of \acro{CPU}s: 1, 2, 4, 8, 16, and 32
+\item Batch sizes: 1, 2, 4, 8, \ldots, 256, 512, and 1024
+\end{itemize}
+To ensure reliability of our findings, we repeated each test configuration five times and we measured the median testing time to control for sample variance. Our experimental code is available online.~\cite{starynovotny2023measure}
+
+We tested the Markdown package at Git commit \texttt{f613632} from August 21, 2023. At this commit, the Markdown package contained 783 test files. For each test file, 10 commands were materialized and executed: four for plain \TeX, four for \LaTeX, and two for \hologo{ConTeXt} MkIV.
+
+To show the speed benefit of batch size limiting, we deactivated it in our experiment, thereby highlighting the speed reduction caused by its absence.
+
+We ran the experiment for 33 days on a shared Linux server with 400~GB of \acro{RAM} and 80 Intel Xeon Gold 6230 \acro{CPU}s.
+
 \section{Results}
 \label{sec:results}
 
@@ -272,8 +292,10 @@ In the first \acro{ARQ}Math task, the \acro{MIRMU} team utilized the \LaTeX ML t
 \section*{Acknowledgements}
 
 \bibliographystyle{tugboat}
+\begingroup
+\RaggedRight
 \bibliography{main}
-\vfill
+\endgroup
 
 \makesignature
 \end{document}
