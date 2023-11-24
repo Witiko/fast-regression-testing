@@ -52,7 +52,7 @@ After the implementation of the CommonMark standard in version 3.0.0 of the Mark
 
 In version 3.0.0 of the Markdown package, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a $60\times$ speed increase and which makes the tests practically useful to developers.
 
-In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} and \ref{sec:techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we describe other test frameworks and how they might adapt the techniques used by our framework. We conclude in sections~\ref{sec:conclusion} and \ref{sec:future-work} by summarizing our contributions and outlining future work.
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} and \ref{sec:techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we describe other test frameworks and how they might adapt the techniques used by our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
 
 \section{On-disk files}
 \label{sec:on-disk-files}
@@ -285,10 +285,10 @@ We ran the experiments for 33 days on a shared Linux server with 400~GB of \acro
 Figure~\ref{fig:results} shows the results of our experiments. In this section, we will discuss the results and how they relate to the three research questions outlined in the previous section.
 
 \subsection{Multiprocessing}
-With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas the median testing time is 27 hours and 2~minutes with 1~\acro{CPU}, it is only 1~hour and 6 minutes with 32~\acro{CPU}s, which is about $24\times$ speed-up.\footnote{The reason why we did not achieve the theoretical $32\times$ speedup is likely due to tasks from other users that we shared our \acro{CPU}s with.}
+With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas with with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about $24\times$ speed-up).\footnote{The reason why we did not achieve the theoretical $32\times$ speedup is likely due to tasks from other users that we shared our \acro{CPU}s with.}
 
 \subsection{Batching of test files}
-With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size up to a point. Whereas the median testing time is 27 hours and 2~minutes with batch size 1, it is only 4~hours and 30 minutes with batch size 8, which is about $6\times$ speed-up, and 1~hour and 20 minutes with batch size 512, which is about $21\times$ speed-up. This indicates that initialization dominates the testing time, as we expected.
+With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is only 4~hours and 30~minutes with batch size 8 (about $6\times$ speed-up), and only 1~hour and 20~minutes with batch size 512 (about $21\times$ speed-up). This indicates that initialization dominates the testing time, as we expected.
 
 To better understand the relationship between the initialization and the testing time, we can solve the following series of equations:
 \begin{align*}
@@ -300,26 +300,26 @@ In the equations, the variable $X$ stands for the mean time that it takes to ini
 The solution shows that whereas it takes $X\approx\text{12 seconds}$ to initialize a \TeX{} format, it takes only $Y\approx\text{0.5 seconds}$ to process the markdown text of a single test file. \emph{Without batching, 95\% of time is spent on initialization and only 5\% on actual testing. With batching, up to 97\% of time is spent on testing.}
 
 \subsection{Batch size limiting}
-% Combined speed-up of multiprocessing and batching
-% The effect of batch size limiting
+The speed improvements from multiprocessing and batching additive up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about $161\times$ speed-up).
+
+When the number of \acro{CPU}s multiplied by the batch size would exceed the number of test files (783), we limit the batch size. The results show what would happen if we did not limit the batch size: As the batch size increases, the number of unused \acro{CPU}s also increases, which decreases testing speed. Whereas with 32~\acro{CPU}s and batch size 32, the median testing time is only 10~minutes, it is 1~hour and 24~minutes with batch size 1024 (about $8.4\times$ slow-down).
 
 \section{Related work}
 \label{sec:related-work}
 
-The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \acro{ARQ}Math shared evaluation tasks for the large-scale indexing of math formulae from scientific articles and Q\&A forums.
+% l3build
 
-In the first \acro{ARQ}Math task, the \acro{MIRMU} team utilized the \LaTeX ML tool to convert \TeX{} formulae into the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to overhead issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, large batches led to many formulae being lost due to errors. To mitigate this, \acro{MIRMU} used batch splitting to recover correct formulae.\footnote{See \tburl{https://github.com/MIR-MU/ARQMath-data-preprocessing}, file \texttt{scripts/latex\_tsv\_to\_cmml\_and\_pmml\_tsv.py}.} The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
+The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \acro{ARQ}Math shared evaluation tasks for the large-scale indexing of math formulae. In \acro{ARQ}Math-1, the \acro{MIRMU} team used the \LaTeX ML tool to convert \TeX{} formulae to the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, large batches led to many formulae being lost due to errors. To mitigate this, \acro{MIRMU} used batch splitting to recover correct formulae.~\cite{novotny2020arqmath} The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-\section{Future work}
-\label{sec:future-work}
-
 \section*{Acknowledgements}
+We would like to gratefully acknowledge the Natural Language Processing Center at the Faculty of Informatics, Masaryk University, Brno, who kindly provided computational resources for our experiments.
 
 \bibliographystyle{tugboat}
 \begingroup
+\gappto{\UrlBreaks}{\UrlOrds}
 \RaggedRight
 \bibliography{main}
 \endgroup
