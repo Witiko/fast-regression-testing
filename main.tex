@@ -21,6 +21,7 @@
 \usetikzlibrary{calc,decorations.pathreplacing,shapes}
 \usepackage{./examples}
 \def\url{\tbsurl}
+\def\AllTeX{(\La\kern-.075em)\kern-.075em\TeX}
 
 %%% Start of metadata %%%
 \title{Fast Regression Testing of \TeX{} Packages: The Unreasonable Effectiveness of Batching}
@@ -42,7 +43,7 @@
 \maketitle
 
 \begin{abstract}
-In version 3.0.0 of the Markdown package for \TeX, the number of tests increased $5.5\times$. This caused the tests to run for up to 15 hours, which slowed down the development cycle. In this article, we describe a novel technique for batching test files and we show that our technique increases the speed of tests by up to $21\times$. We also discuss how our technique can speed up other testing frameworks for \TeX{} packages such as l3build. Our conversation is approachable, aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
+In version 3.0.0 of the Markdown package for \TeX, the number of tests increased $5.5\times$. This caused the tests to run for up to 15 hours, which slowed down the development cycle. In this article, we describe a novel technique for batching test files and we show that our technique increases the speed of tests up to $21\times$. We also discuss how our technique can speed up other testing frameworks for \TeX{} packages such as l3build. Our conversation is approachable, aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
 \end{abstract}
 
 \section{Introduction}
@@ -282,7 +283,7 @@ We ran the experiments for 33 days on a shared Linux server with 400~GB of \acro
 \section{Results}
 \label{sec:results}
 
-Figure~\ref{fig:results} shows the results of our experiments. In this section, we will discuss the results and how they relate to the three research questions outlined in the previous section.
+Figure~\ref{fig:results} shows the results of our experiments. In this section, we discuss the results and how they relate to the three research questions outlined in the previous section.
 
 \subsection{Multiprocessing}
 With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas with with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about $24\times$ speed-up).\footnote{The reason why we did not achieve the theoretical $32\times$ speedup is likely due to tasks from other users that we shared our \acro{CPU}s with.}
@@ -292,27 +293,41 @@ With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch 
 
 To better understand the relationship between the initialization and the testing time, we can solve the following series of equations:
 \begin{align*}
-    10\cdot(783\cdot(X + Y)) &= \text{27h 02m} \tag{Batch size 1} \\
-    10\cdot(X + 783\cdot Y) &= \text{01h 16m}  \tag{Batch size 1024}
+    10\cdot(783\cdot(X + Y)) &= \text{27 hours and 2 minutes} \\
+    10\cdot(X + 783\cdot Y) &= \text{1 hour and 16 minutes}
 \end{align*}
 In the equations, the variable $X$ stands for the mean time that it takes to initialize a \TeX{} format and the variable $Y$ stands for the mean time that it takes to process the markdown text of a single test file.
 
-The solution shows that whereas it takes $X\approx\text{12 seconds}$ to initialize a \TeX{} format, it takes only $Y\approx\text{0.5 seconds}$ to process the markdown text of a single test file. \emph{Without batching, 95\% of time is spent on initialization and only 5\% on actual testing. With batching, up to 97\% of time is spent on testing.}
+The solution shows that whereas it takes $X\approx\text{12 seconds}$ to initialize a \TeX{} format, it takes only $Y\approx\text{0.5 seconds}$ to process a markdown text. In other words, without batching, 95\% of time is spent on initialization and only 5\% on actual testing; with batching, up to 97\% of time is spent on actual testing.
 
 \subsection{Batch size limiting}
 The speed improvements from multiprocessing and batching additive up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about $161\times$ speed-up).
 
-When the number of \acro{CPU}s multiplied by the batch size would exceed the number of test files (783), we limit the batch size. The results show what would happen if we did not limit the batch size: As the batch size increases, the number of unused \acro{CPU}s also increases, which decreases testing speed. Whereas with 32~\acro{CPU}s and batch size 32, the median testing time is only 10~minutes, it is 1~hour and 24~minutes with batch size 1024 (about $8.4\times$ slow-down).
+When the number of \acro{CPU}s multiplied by the batch size exceeds the number of test files (783), we cannot use all \acro{CPU}s and the testing speed decreases. Whereas with 32~\acro{CPU}s and batch size 16, the median testing time is only 11~minutes, it is 1~hour and 24~minutes with the same number of \acro{CPU}s and batch size 1024 (about $8\times$ slow-down). Our testing framework prevents this by limiting the batch size.
 
 \section{Related work}
 \label{sec:related-work}
 
-% l3build
+In this section, we discuss prior work related to the testing framework of the Markdown package.
 
-The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \acro{ARQ}Math shared evaluation tasks for the large-scale indexing of math formulae. In \acro{ARQ}Math-1, the \acro{MIRMU} team used the \LaTeX ML tool to convert \TeX{} formulae to the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, large batches led to many formulae being lost due to errors. To mitigate this, \acro{MIRMU} used batch splitting to recover correct formulae.~\cite{novotny2020arqmath} The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
+\subsection{The l3build package}
+The l3build package~\cite{latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
+
+Unlike our testing framework, the l3build package is written in Lua, which has no support for multiprocessing. Therefore, l3build needs external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing.
+
+Unlike our testing framework, l3build does not support batching. However, it allows grouping multiple tests in a single file as a form of manual batching.
+
+\subsection{Batching and batch splitting}
+The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \acro{ARQ}Math competitions for large-scale indexing of math formulae.
+
+In the first \acro{ARQ}Math competition, the \acro{MIRMU} team used the \LaTeX ML tool to convert \TeX{} formulae to the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, a single error would cause the loss of an entire batch. Therefore, \acro{MIRMU} used batch splitting to recover correct formulae after an error.~\cite{novotny2020arqmath} The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
 
 \section{Conclusion}
 \label{sec:conclusion}
+
+In this study, we explored techniques for speeding up the regression testing of \TeX{} packages. Using multiprocessing and the batching of test files, we improved the testing time of the Markdown package for \TeX{} from hours to minutes.
+
+Our techniques are general and can be used to speed up other testing frameworks for \TeX{} packages. This advancement is likely to streamline the development cycles for \TeX{} packages.
 
 \section*{Acknowledgements}
 We would like to gratefully acknowledge the Natural Language Processing Center at the Faculty of Informatics, Masaryk University, Brno, who kindly provided computational resources for our experiments.
