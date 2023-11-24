@@ -273,8 +273,35 @@ To show the speed benefit of batch size limiting, we deactivated it in our exper
 
 We ran the experiment for 33 days on a shared Linux server with 400~GB of \acro{RAM} and 80 Intel Xeon Gold 6230 \acro{CPU}s.
 
+\begin{figure}
+\includegraphics[trim={0.5cm 0.3cm 1.6cm 1.4cm}, clip, width=\linewidth]{images/speed-tests}
+\caption{The median testing times for different numbers of \acro{CPU}s and different batch sizes}
+\label{fig:results}
+\end{figure}
+
 \section{Results}
 \label{sec:results}
+
+Figure~\ref{fig:results} shows the results of our experiment. In this section, we will discuss the results and how they relate to the three research questions outlined in the previous section.
+
+\subsection{Multiprocessing}
+With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas the median testing time is 27 hours and 2~minutes with 1~\acro{CPU}, it is only 1~hour and 6 minutes with 32~\acro{CPU}s, which is about $24\times$ speed-up.\footnote{The reason why we did not achieve the theoretical $32\times$ speedup is likely due to tasks from other users that we shared our \acro{CPU}s with.}
+
+\subsection{Batching of test files}
+With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size up to a point. Whereas the median testing time is 27 hours and 2~minutes with batch size 1, it is only 4~hours and 30 minutes with batch size 8, which is about $6\times$ speed-up, and 1~hour and 20 minutes with batch size 512, which is about $21\times$ speed-up. This indicates that initialization dominates the testing time, as we expected.
+
+To better understand the relationship between the initialization and the testing time, we can solve the following series of equations:
+\begin{align*}
+    10\cdot(783\cdot(X + Y)) &= \text{27h 02m} \tag{Batch size 1} \\
+    10\cdot(X + 783\cdot Y) &= \text{01h 16m}  \tag{Batch size 1024}
+\end{align*}
+In the equations, the variable $X$ stands for the mean time that it takes to initialize a \TeX{} format and the variable $Y$ stands for the mean time that it takes to process the markdown text of a single test file.
+
+The solution shows that whereas it takes $X\approx\text{12 seconds}$ to initialize a \TeX{} format, it takes only $Y\approx\text{0.5 seconds}$ to process the markdown text of a single test file. \emph{Without batching, 95\% of time is spent on initialization and only 5\% on actual testing. With batching, up to 97\% of time is spent on testing.}
+
+\subsection{Batch size limiting}
+% Combined speed-up of multiprocessing and batching
+% The effect of batch size limiting
 
 \section{Related work}
 \label{sec:related-work}
