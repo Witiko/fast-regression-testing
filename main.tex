@@ -253,7 +253,7 @@ Limiting the batch size increases the speed of testing, because it decreases the
 \section{Experiments}
 \label{sec:experiments}
 
-In this section, we describe our experiment with multiprocessing and batching. In our experiment, we aimed to answer the following research questions:
+In this section, we describe our experiments with multiprocessing and batching. In our experiments, we aimed to answer the following research questions:
 \begin{enumerate}
 \item What is the speed benefit of multiprocessing?
 \item What is the speed benefit of batching test files?
@@ -269,9 +269,9 @@ To ensure reliability of our findings, we repeated each test configuration five 
 
 We tested the Markdown package at Git commit \texttt{f613632} from August 21, 2023. At this commit, the Markdown package contained 783 test files. For each test file, 10 commands were materialized and executed: four for plain \TeX, four for \LaTeX, and two for \hologo{ConTeXt} MkIV.
 
-To show the speed benefit of batch size limiting, we deactivated it in our experiment, thereby highlighting the speed reduction caused by its absence.
+To show the speed benefit of batch size limiting, we deactivated it in our experiments, thereby highlighting the speed reduction caused by its absence.
 
-We ran the experiment for 33 days on a shared Linux server with 400~GB of \acro{RAM} and 80 Intel Xeon Gold 6230 \acro{CPU}s.
+We ran the experiments for 33 days on a shared Linux server with 400~GB of \acro{RAM} and 80 Intel Xeon Gold 6230 \acro{CPU}s.
 
 \begin{figure}
 \includegraphics[trim={0.5cm 0.3cm 1.6cm 1.4cm}, clip, width=\linewidth]{images/speed-tests}
@@ -282,7 +282,7 @@ We ran the experiment for 33 days on a shared Linux server with 400~GB of \acro{
 \section{Results}
 \label{sec:results}
 
-Figure~\ref{fig:results} shows the results of our experiment. In this section, we will discuss the results and how they relate to the three research questions outlined in the previous section.
+Figure~\ref{fig:results} shows the results of our experiments. In this section, we will discuss the results and how they relate to the three research questions outlined in the previous section.
 
 \subsection{Multiprocessing}
 With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas the median testing time is 27 hours and 2~minutes with 1~\acro{CPU}, it is only 1~hour and 6 minutes with 32~\acro{CPU}s, which is about $24\times$ speed-up.\footnote{The reason why we did not achieve the theoretical $32\times$ speedup is likely due to tasks from other users that we shared our \acro{CPU}s with.}
