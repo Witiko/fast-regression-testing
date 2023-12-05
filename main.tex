@@ -273,7 +273,7 @@ To answer the questions, we tested the Markdown package with different \acro{CPU
 \end{itemize}
 To ensure reliability of our findings, we repeated each test configuration five times and we measured the median testing time to control for sample variance. Our experimental code is available online.~\cite{starynovotny2023measure}
 
-We tested the Markdown package at Git commit \texttt{7613632} from August 21, 2023. At this commit, the Markdown package contained 783 test files. For each test file, 14 commands were materialized and executed: four for plain \TeX, four for \LaTeX, and six for \hologo{ConTeXt} MkIV. Therefore, \TeX{} formats were initialized $14\cdot 783 = 10{,}962\times$ during testing.
+We tested the Markdown package at Git commit \texttt{7613632} from August 21, 2023. At this commit, the Markdown package contained 783 test files. For each test file, 14 commands were materialized and executed: four for plain \TeX, four for \LaTeX, and six for \hologo{ConTeXt} MkIV. Therefore, \TeX{} formats were initialized up to $14\cdot 783 = 10{,}962\times$ during testing.
 
 To show the speed benefit of batch size limiting, we deactivated it in our experiments, thereby highlighting the speed reduction caused by its absence.
 
