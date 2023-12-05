@@ -15,6 +15,15 @@
 \usepackage{hologo}
 \usepackage{fontawesome}
 \usepackage{ragged2e}
+\makeatletter
+%listings float without package
+\newenvironment{listing*}{\@dblfloat{listing}}{\end@dblfloat}
+\def\ext@listing{lol}
+\newcommand*{\ftype@listing}{4}
+\newcounter{listing}
+\newcommand*{\fnum@listing}{\textbf{Listing~\thelisting}}
+\def\fps@listing{p}
+\makeatother
 \usepackage{fancyvrb,fvextra}
 \fvset{breaklines}
 \usepackage{tikz}
@@ -183,11 +192,11 @@ To increase the speed of testing, we can amortize the cost of initialization by 
 \noindent
 Batching $N$ test files reduces the cost of initialization $N\times$. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
 
-\begin{figure*}
+\begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
 \caption{The shell script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes the materialized commands, and \linebreak c) compares the \texttt{.log} file against the expected output from the test file.}
-\label{fig:test.sh}
-\end{figure*}
+\label{lst:test.sh}
+\end{listing*}
 
 \section{Implementation}
 \label{sec:implementation}
@@ -195,7 +204,7 @@ In this section, we describe the implementation of our framework before and afte
 
 \subsection{Before and after Markdown 3.0.0}
 
-Before Markdown 3.0.0, our framework was implemented by a shell script \file{test.sh}, see Figure \ref{fig:test.sh}.
+Before Markdown 3.0.0, our framework was implemented by a shell script \file{test.sh}, see Listing~\ref{lst:test.sh}.
 
 At first, \file{test.sh} processed test files sequentially and did not use the techniques from Section~\ref{sec:techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
 

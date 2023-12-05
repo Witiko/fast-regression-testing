@@ -1,3 +1,3 @@
-pdftex TEST_FILENAME --shell-escape
-xetex  TEST_FILENAME --shell-escape
+pdftex --shell-escape TEST_FILENAME
+xetex --shell-escape TEST_FILENAME
 luatex TEST_FILENAME
