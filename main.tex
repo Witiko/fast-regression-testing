@@ -52,18 +52,18 @@
 \maketitle
 
 \begin{abstract}
-In version 3.0.0 of the Markdown package for \TeX, the number of tests increased $5.5\times$. This caused the tests to run for up to 15 hours, which slowed down our development cycle.
+In version 3.0.0 of the Markdown package for \TeX, the number of tests increased from 143 to 783. This caused the tests to run for up to 15~hours, which slowed down our development cycle.
 
-In this article, we describe a novel technique for batching test files and we show that our technique increases the speed of testing up to $21\times$. We also discuss how our technique can speed up other regression testing frameworks for \TeX{} packages such as l3build.
-Our conversation is approachable, aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
+In this article, we describe a novel technique for batching test files that reduced our testing time from 15 hours to just 15 minutes. We also discuss how our technique can speed up other regression testing frameworks for \TeX{} packages such as l3build.
+Our discussion is approachable, aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
 \end{abstract}
 
 \section{Introduction}
 Like many other \TeX{} packages, the Markdown package for \TeX{} comes with a test suite. Developers can use the test suite to verify that their changes do not break existing functionality. Changes submitted to the code repository of the Markdown package at GitHub are also automatically tested. The tests should take no longer than a couple minutes, so that developers can use them for real-time feedback.
 
-After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about $5.5\times$). This had caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
+After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about 5.5 times). This had caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
 
-In order to increase the testing speed, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a $60\times$ speed increase and which makes the tests practically useful to developers.
+In order to increase the testing speed, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a 60-fold speed increase and which makes the tests practically useful to developers.
 
 In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} and \ref{sec:techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
 
@@ -77,7 +77,7 @@ In this section, we describe the on-disk files used in our framework: test files
 \label{sec:test-files}
 
 \looseness=-1
-The Markdown package converts markdown text to \TeX{} commands. To validate the conversion, our framework redefines the \TeX{} commands to produce output in the \texttt{.log} file, which we can examine.
+The Markdown package converts markdown text to \TeX{} commands. To validate the conversion, our framework redefines these \TeX{} commands to produce output in the \texttt{.log} file, which we can examine.
 
 A \emph{test file} consists of a) \TeX{} code that configures the Markdown package, b) markdown text, and c) the expected output in the \texttt{.log} file.
 
@@ -99,7 +99,14 @@ Here is an example format \texttt{plain} with commands for the \hologo{pdfTeX}, 
 
 \smallskip
 \noindent
-\example{COMMANDS.m4}
+\addtocounter{footnote}{1}%
+\footnotetext{%
+  The Markdown package uses Lua. Whereas Lua\TeX{} can run Lua code directly, other \TeX{} engines must use the shell.%
+}%
+\example[%
+  \addtocounter{footnote}{-2}%
+  \fvset{commandchars=\\\{\}}%
+]{COMMANDS.m4}
 
 \smallskip
 \noindent
@@ -114,7 +121,7 @@ The format \texttt{plain} also contains two templates. One uses the \cs{markdown
 
 \smallskip
 \noindent
-\example{verbatim.tex.m4}
+\example[\fvset{commandchars=|<>}]{verbatim.tex.m4}
 
 \subsection{Materialized templates and commands}
 \label{sec:materialized-templates-and-commands}
@@ -169,7 +176,7 @@ Whereas \TeX{} only uses a single \acro{CPU}, modern computers contain several \
 
 \smallskip
 \noindent
-Multiprocessing with $N$ \acro{CPU}s speeds up testing $N\times$.
+Using $N$ \acro{CPU}s increases testing speed up to $N$ times.
 
 \subsection{Batching of test files}
 \label{sec:batching-of-test-files}
@@ -190,7 +197,7 @@ To increase the speed of testing, we can amortize the cost of initialization by 
 
 \smallskip
 \noindent
-Batching $N$ test files reduces the cost of initialization $N\times$. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
+Batching $N$ test files decreases initialization cost $N$ times. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
@@ -213,13 +220,13 @@ $ find -name '*.test' | parallel ./test.sh
 \end{verbatim}
 
 \looseness=-1
-In Markdown 3.0.0, we rewrote our framework in the Python programming language~\cite{novotny2023implement}. This made our framework platform-independent and allowed us to implement the batching of test files.
+In Markdown 3.0.0, we rewrote our framework in the Python programming language~\cite{novotny2023implement}. This made our framework platform-independent and made it easier for us to implement the batching of test files.
 % Furthermore, using Python allowed us to customize the logs produced by our framework, making them easier to understand for developers.
 
 \subsection{Batch splitting}
 
 \looseness=-1
-When we test batches of test files, a \texttt{.log} file is split into sections corresponding to individual test files and compared with the expected test file outputs. However, if a fatal error occurs, the \texttt{.log} file may become malformed. In order to identify the test file responsible for the error, we repeatedly \emph{split the batch}.
+When we test batches of test files, a \texttt{.log} file is split into sections corresponding to individual test files and compared with the expected test file outputs. However, if a fatal error occurs, the \texttt{.log} file may become malformed. To find the test file responsible for the error, we repeatedly \emph{split the batch} using binary search.
 
 Here is how we would split a batch of test files \file{first.test}, \file{second.test}, and \file{third.test}, where \file{second.test} causes a fatal error:
 
@@ -282,7 +289,7 @@ To answer the questions, we tested the Markdown package with different \acro{CPU
 \end{itemize}
 To ensure reliability of our findings, we repeated each test configuration five times and we measured the median testing time to control for sample variance. Our experimental code is available online.~\cite{starynovotny2023measure}
 
-We tested the Markdown package at Git commit \texttt{7613632} from August 21, 2023. At this commit, the Markdown package contained 783 test files. For each test file, 14 commands were materialized and executed: four for plain \TeX, four for \LaTeX, and six for \hologo{ConTeXt} MkIV. Therefore, \TeX{} formats were initialized up to $14\cdot 783 = 10{,}962\times$ during testing.
+We tested the Markdown package at Git commit \texttt{7613632} from August 21, 2023. At this commit, the Markdown package contained 783 test files. For each test file, 14 commands were materialized and executed: four for plain \TeX, four for \LaTeX, and six for \hologo{ConTeXt} MkIV. Therefore, \TeX{} formats were initialized up to $14\cdot 783 = 10{,}962$ times during testing.
 
 To show the speed benefit of batch size limiting, we deactivated it in our experiments, thereby highlighting the speed reduction caused by its absence.
 
@@ -300,10 +307,10 @@ We ran the experiments for 33 days on a shared Linux server with 400~GB of \acro
 Figure~\ref{fig:results} shows the results of our experiments. In this section, we discuss the results and how they relate to the three research questions outlined in the previous section.
 
 \subsection{Multiprocessing}
-With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas with with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about $24\times$ speed-up).\footnote{The reason why we did not achieve the theoretical $32\times$ speedup is likely due to tasks from other users that we shared \acro{CPU}s with.}
+With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas with with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about 24-fold speed-up).\footnote{The reason why we did not achieve the theoretical 32-fold speedup is likely due to tasks from other users that we shared \acro{CPU}s with.}
 
 \subsection{Batching of test files}
-With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is only 4~hours and 30~minutes with batch size 8 (about $6\times$ speed-up), and only 1~hour and 20~minutes with batch size 512 (about $21\times$ speed-up). This indicates that initialization dominates the testing time.
+With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is only 4~hours and 30~minutes with batch size 8 (about 6-fold speed-up), and only 1~hour and 20~minutes with batch size 512 (about 21-fold speed-up). This indicates that initialization dominates the testing time.
 
 To better understand the relationship between the initialization and the testing time, we can solve the following series of equations:
 \begin{align*}
@@ -315,9 +322,9 @@ On the left-hand side of the equations, the variable $X$ stands for the mean tim
 The solution shows that whereas it takes $X\approx\text{8.47 seconds}$ to initialize a \TeX{} format, it takes only $Y\approx\text{0.41 seconds}$ to process a markdown text. In other words, without batching, 95\% of time is spent on initialization and only 5\% on actual testing; with batching, up to 97\% of time is spent on actual testing.
 
 \subsection{Batch size limiting}
-The speed improvements from multiprocessing and batching are additive up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about $161\times$ speed-up).
+The speed improvements from multiprocessing and batching are additive up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about 161-fold speed-up).
 
-When the number of \acro{CPU}s multiplied by the batch size exceeds the number of test files (783), we cannot use all \acro{CPU}s and the testing speed decreases. Whereas with 32~\acro{CPU}s and batch size 16, the median testing time is only 11~minutes, it is 1~hour and 24~minutes with the same number of \acro{CPU}s and batch size 1024 (about $8\times$ slow-down). Our framework prevents this by limiting the batch size.
+When the number of \acro{CPU}s multiplied by the batch size exceeds the number of test files (783), we cannot use all \acro{CPU}s and the testing speed decreases. Whereas with 32~\acro{CPU}s and batch size 16, the median testing time is only 11~minutes, it is 1~hour and 24~minutes with the same number of \acro{CPU}s and batch size 1024 (about 8-fold slow-down). Our framework prevents this by limiting the batch size.
 
 \section{Related work}
 \label{sec:related-work}
@@ -327,7 +334,8 @@ In this section, we discuss prior work related to our framework.
 \subsection{The l3build package}
 The l3build package~\cite{latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
 
-Unlike our framework, the l3build package is written in Lua, which has no support for multiprocessing. Therefore, l3build needs external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing.
+Unlike our framework, the l3build package is written in Lua, which has no built-in support for multiprocessing. Therefore, l3build needs external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing.
+\looseness=-1
 
 Unlike our framework, l3build also does not support batching. However, it allows grouping multiple tests in a single file as a form of manual batching.
 
