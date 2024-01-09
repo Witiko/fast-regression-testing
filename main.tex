@@ -332,7 +332,7 @@ When the number of \acro{CPU}s multiplied by the batch size exceeds the number o
 In this section, we discuss prior work related to our framework.
 
 \subsection{The l3build package}
-The l3build package~\cite{latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
+The l3build package~\cite{mittelbach2014l3build, wright2015automating, wright2022l3build, latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
 
 Unlike our framework, the l3build package is written in Lua, which has no built-in support for multiprocessing. Therefore, l3build needs external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing.
 \looseness=-1
