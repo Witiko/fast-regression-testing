@@ -126,7 +126,7 @@ The format \texttt{plain} also contains two templates. One uses the \cs{markdown
 \subsection{Materialized templates and commands}
 \label{sec:materialized-templates-and-commands}
 
-During testing, the texts \texttt{TEST\_SETUP\_FILENAME} and \texttt{TEST\_INPUT\_FILENAME} in a template are replaced with names of files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Additionally, the text \texttt{undivert (TEST\_INPUT\_FILENAME)} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
+During testing, the texts \texttt{TEST\_SETUP\_FILENAME} and \texttt{TEST\_INPUT\_FILENAME} in a template are replaced with names of files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Additionally, the text \texttt{undivert(TEST\_INPUT\_FILENAME)} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
 
 Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-commands-and-templates} after it has been materialized with the test file \file{strike-through.test} from Section~\ref{sec:test-files}:
 
