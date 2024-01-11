@@ -52,11 +52,11 @@
 \maketitle
 
 \begin{abstract}
-Small \TeX{} packages, often created for one-time use, usually depend on user feedback to maintain code quality. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code. This helps in maintaining the integrity of the project over time.
+Small \TeX{} packages, typically developed in a single iteration rather than through ongoing updates, can depend on user feedback to maintain code quality. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code. This helps to maintain the integrity of the project over time.
 
 In version 3.0.0 of the Markdown package for \TeX, the number of tests increased from 143 to 783. This caused the tests to run for up to 15~hours, which slowed down our development cycle.
-In this article, we describe a novel technique for batching test files that reduced our testing time from 15 hours to just 15 minutes. We also discuss how our technique can speed up other regression testing frameworks for \TeX{} packages such as l3build.
-Our discussion is aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
+In this article, we describe a novel technique for batching test files that reduced our testing time from 15 hours to just 15 minutes. With batching, the amount of time that is spent on actual testing as opposed to overhead increased from 5\% to 97\%. Additionally, when combined with multiprocessing on 32 \acro{CPU}s, our batching technique achieved an impressive speed increase of up to 161 times compared to running without any multiprocessing or batching. We also discuss how our technique can speed up other regression testing frameworks for \TeX{} packages such as l3build.
+Our work is aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
 \end{abstract}
 
 \section{Introduction}
@@ -344,7 +344,7 @@ Whereas our framework is written in Python, l3build is written in Lua. Each lang
 
 In the Markdown package, each test file is designed to hold a single self-contained test that avoids modifying the global state. This design allows for straightforward grouping of tests into batches, where each test is isolated from others using \TeX{} groups, as we discussed in Section~\ref{sec:batching-of-test-files}.
 
-In l3build, a single test file may contain multiple tests. These tests can be interdependent, creating a challenge in separating them from their respective files. Additionally, these tests might change the global state, which poses a risk of unexpected conflicts when tests are grouped into batches. Due to these complexities, l3build does not support the batching of test files. Nonetheless, the practice of including multiple tests in a single test file can be seen as a form of manual batching that amortizes the cost of initialization.
+In l3build, a single test file may contain multiple tests. These tests can be interdependent, creating a challenge in separating them from their respective files. Additionally, these tests might change the global state, which poses a risk of unexpected conflicts when tests are grouped into batches. Due to these complexities, l3build does not support the batching of tests. Nonetheless, the practice of including multiple tests in a single test file can be seen as a form of manual batching that amortizes the cost of initialization.
 
 \subsection{Batching and batch splitting}
 The techniques of batching and batch splitting were perhaps first used with \TeX{} in the ARQMath competitions for large-scale indexing of math formulae.
@@ -355,10 +355,14 @@ In the first ARQMath competition, the \acro{MIRMU} team used the \LaTeX ML tool 
 \label{sec:conclusion}
 
 Larger \TeX{} projects commonly use regression tests to ensure code integrity over time.
-In this study, we explored techniques for speeding up the regression testing of \TeX{} packages. Using multiprocessing and the batching of test files, we improved the testing time of the Markdown package from hours to minutes.
-\looseness=-1
+In this study, we explored techniques for speeding up the regression testing of \TeX{} packages. We have shown that batching test files can improve the testing efficiency from 5\% to 97\%. We have also shown that multiprocessing on 32 \acro{CPU}s combined with batching increases testing speed up to 161 times.
 
-Our techniques are general and can be used to speed up other testing frameworks for \TeX{} packages. This advancement is likely to streamline the development cycles for \TeX{} packages.
+Our techniques are general and can be used to speed up other testing frameworks for \TeX{} packages. The lessons learned from our work are as follows:
+\begin{itemize}
+\item Whereas \TeX{} only uses a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Multiprocessing puts these \acro{CPU}s to a good use and can increase testing speed with little effort.
+\item Writing small isolated test files is convenient for authors but carries a high initialization cost during testing. For \TeX{} packages such as the Markdown package, where the tests are easy to isolate, the batching of test files can be used to recover the initialization cost.
+\end{itemize}
+We believe that these advancements are likely to streamline the development cycles for \TeX{} packages.
 
 \medskip
 \noindent
