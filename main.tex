@@ -203,6 +203,8 @@ To increase the speed of testing, we can amortize the cost of initialization by 
 \noindent
 Batching $N$ test files decreases initialization cost $N$ times. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
 
+If tests use a lot of memory that is not immediately freed, using multiprocessing and batching increases the memory footprint of testing. Specifically, using $M$ \acro{CPU}s and batching $N$ test files increases the memory footprint of testing up to $M\cdot N$ times.
+
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
 \caption{The shell script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes the materialized commands, and \linebreak c) compares the \texttt{.log} file against the expected output from the test file.}
