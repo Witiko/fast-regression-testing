@@ -52,14 +52,15 @@
 \maketitle
 
 \begin{abstract}
-In version 3.0.0 of the Markdown package for \TeX, the number of tests increased from 143 to 783. This caused the tests to run for up to 15~hours, which slowed down our development cycle.
+Small \TeX{} packages, often created for one-time use, usually depend on user feedback to maintain code quality. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code. This helps in maintaining the integrity of the project over time.
 
+In version 3.0.0 of the Markdown package for \TeX, the number of tests increased from 143 to 783. This caused the tests to run for up to 15~hours, which slowed down our development cycle.
 In this article, we describe a novel technique for batching test files that reduced our testing time from 15 hours to just 15 minutes. We also discuss how our technique can speed up other regression testing frameworks for \TeX{} packages such as l3build.
-Our discussion is approachable, aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
+Our discussion is aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
 \end{abstract}
 
 \section{Introduction}
-Like many other \TeX{} packages, the Markdown package for \TeX{} comes with a test suite. Developers can use the test suite to verify that their changes do not break existing functionality. Changes submitted to the code repository of the Markdown package at GitHub are also automatically tested. The tests should take no longer than a couple minutes, so that developers can use them for real-time feedback.
+The Markdown package for \TeX{} features a series of regression tests, enabling developers to ensure that their modifications do not negatively impact existing functionality. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
 
 After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about 5.5 times). This had caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
 
@@ -101,7 +102,7 @@ Here is an example format \texttt{plain} with commands for the \hologo{pdfTeX}, 
 \noindent
 \addtocounter{footnote}{1}%
 \footnotetext{%
-  The Markdown package uses Lua. Whereas Lua\TeX{} can run Lua code directly, other \TeX{} engines must use the shell.%
+  The Markdown package uses Lua to parse markdown text. Whereas Lua\TeX{} can execute Lua code directly, other \TeX{} engines must use the shell of the operating system to execute Lua code. Since accessing the shell is a security risk, users must express their consent by writing \texttt{--shell-escape}.%
 }%
 \example[%
   \addtocounter{footnote}{-2}%
@@ -352,7 +353,9 @@ In the first ARQMath competition, the \acro{MIRMU} team used the \LaTeX ML tool 
 \section{Conclusion}
 \label{sec:conclusion}
 
+Larger \TeX{} projects commonly use regression tests to ensure code integrity over time.
 In this study, we explored techniques for speeding up the regression testing of \TeX{} packages. Using multiprocessing and the batching of test files, we improved the testing time of the Markdown package from hours to minutes.
+\looseness=-1
 
 Our techniques are general and can be used to speed up other testing frameworks for \TeX{} packages. This advancement is likely to streamline the development cycles for \TeX{} packages.
 
