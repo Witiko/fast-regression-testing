@@ -3,6 +3,6 @@
 	\node (cpu) at \coord {\includegraphics[scale=0.065]{images/cpu}};
     \fill[white] ($(cpu)+(4pt, -30pt)$) -- ($(cpu)+(4pt, -1pt)$) -- ($(cpu)+(20pt, -1pt)$) -- ($(cpu)+(28pt, -7pt)$) -- ($(cpu)+(28pt, -30pt)$) -- cycle;
 	\node[anchor=north] (file) at ($(cpu)+(16pt, 0pt)$) {{\fontsize{30}{30}\selectfont\faFileTextO}};
-	\node[below=.3ex,font=\ttfamily] at (file.south) {\name.test};
+	\node[below=.75ex,font=\ttfamily] at (file.south) {\name.test};
 }
 \end{tikzpicture}%
