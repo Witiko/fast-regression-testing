@@ -229,8 +229,9 @@ We can \emph{limit the batch size} so that all \acro{CPU}s are used:
 \endgroup
 
 \smallskip
+\noindent
 \looseness=-1
-Limiting the batch size increases the speed of testing, because it decreases the amount of work of every used \acro{CPU}. However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost and more \acro{CPU}s are used. Therefore, limiting the batch size increases the speed of testing but decreases energy-efficiency.
+Limiting the batch size increases the speed of testing, because every used \acro{CPU} has less work to do.\footnote{However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost and more \acro{CPU}s are used. Therefore, limiting the batch size increases the speed of testing but decreases energy-efficiency.}
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
