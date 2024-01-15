@@ -235,7 +235,7 @@ Limiting the batch size increases the speed of testing, because every used \acro
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
-\caption{The shell script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes the materialized commands, and \linebreak c) compares the \texttt{.log} file against the expected output from the test file.}
+\caption{The shell script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes materialized commands, c) compares the \texttt{.log} file against the expected output, and d) optionally updates the test file.}
 \label{lst:test.sh}
 \end{listing*}
 

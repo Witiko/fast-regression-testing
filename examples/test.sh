@@ -1,8 +1,5 @@
 #!/bin/bash
-set -o errexit
-set -o pipefail
-set -o nounset
-
+set -o errexit -o pipefail -o nounset
 BUILDDIR="$(mktemp -d)"
 trap 'rm -rf "$BUILDDIR"' INT TERM
 for TESTFILE; do
@@ -37,7 +34,11 @@ for TESTFILE; do
         }' <test.log >test-actual.log
 
         # Compare the expected outcome against the actual outcome.
-        diff -a -c test-expected.log test-actual.log
+        diff -a -c test-expected.log test-actual.log ||
+        # Uncomment the below lines to update the testfile.
+#          (sed -n '1,/^\s*>>>\s*$/p' <"${TESTFILE##*/}" &&
+#           cat test-actual.log) >"$OLDPWD"/"$TESTFILE" ||
+           false
 
         # Clean up the testing directory.
         cd "$OLDPWD"
