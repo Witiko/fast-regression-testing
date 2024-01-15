@@ -52,14 +52,13 @@
 \maketitle
 
 \begin{abstract}
-Small \TeX{} packages, typically developed in a single iteration rather than through ongoing updates, can depend on user feedback to maintain code quality. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code. This helps to maintain the integrity of the project over time.
-
-In version 3.0.0 of the Markdown package for \TeX, the number of tests increased from 143 to 783. This caused the tests to run for up to 15~hours, which slowed down our development cycle.
-In this article, we describe a novel technique for batching test files that reduced our testing time from 15 hours to just 15 minutes. With batching, the amount of time that is spent on actual testing as opposed to overhead increased from 5\% to 97\%. Additionally, when combined with multiprocessing on 32 \acro{CPU}s, our batching technique achieved an impressive speed increase of up to 161 times compared to running without any multiprocessing or batching. We also discuss how our technique can speed up other regression testing frameworks for \TeX{} packages such as l3build.
-Our work is aimed at encouraging more efficient testing methods in the broader community of \TeX{} enthusiasts.
+In version 3.0.0 of the Markdown package for \TeX, the number of regression tests increased from 143 to 783. This caused the tests to run for up to 15~hours, which slowed down our development cycle.
+In this article, we describe a novel technique for batching test files that reduced our testing time from 15 hours to just 15 minutes. With batching, the amount of time that is spent on actual testing increased from 5\% to 97\%. When combined with multiprocessing on 32 \acro{CPU}s, our batching technique achieved a speed increase of up to 161 times compared to running without any multiprocessing or batching.
 \end{abstract}
 
 \section{Introduction}
+Small \TeX{} packages, typically developed in a single iteration rather than through ongoing updates, can depend on user feedback to maintain the code. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code.
+
 The Markdown package for \TeX{} features a series of regression tests, enabling developers to ensure that their modifications do not negatively impact existing functionality. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
 
 After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about 5.5 times). This had caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
