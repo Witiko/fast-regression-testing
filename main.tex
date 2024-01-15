@@ -160,7 +160,9 @@ During testing, the materialized commands are executed. Each command produces a 
 
 \section{Techniques}
 \label{sec:techniques}
-In this section, we describe the computational techniques of multiprocessing and the batching of test files. We also show how we use these techniques to increase the speed of testing in our framework.
+
+In this section, we describe the computational techniques of multiprocessing and the batching of test files. We also show how we use these techniques to increase the speed of testing in our framework. Furthermore, combining both techniques can lead to issues with memory and load balancing. In this section, we outline the issues and how we addressed them.
+\looseness=-1
 
 \subsection{Multiprocessing}
 \label{sec:multiprocessing}
@@ -199,7 +201,36 @@ To increase the speed of testing, we can amortize the cost of initialization by 
 \noindent
 Batching $N$ test files decreases initialization cost $N$ times. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
 
-If tests use a lot of memory that is not immediately released, using multiprocessing and batching increases the memory footprint of testing. Specifically, using $M$ \acro{CPU}s and batching $N$ test files increases the memory footprint of testing up to $M\cdot N$ times.
+If tests use a lot of memory that is not immediately released, using multiprocessing and batching increases the memory footprint of testing. Specifically, using $M$ \acro{CPU}s and batching $N$ test files increases the memory footprint of testing up to $M\cdot N$ times. Therefore, $M$ and $N$ should be capped. For the Markdown package, we use at most 32 \acro{CPU}s and 50 test files.
+\looseness=-1
+
+\subsection{Batch size limiting}
+
+When we use both multiprocessing and batching with large batch sizes, most \acro{CPU}s will be unused:
+
+\smallskip
+\noindent
+\begingroup
+\centering
+\input images/cpus-without-limiting.tex
+\par
+\endgroup
+
+\smallskip
+\noindent
+We can \emph{limit the batch size} so that all \acro{CPU}s are used:
+
+\smallskip
+\noindent
+\begingroup
+\centering
+\input images/cpus-with-limiting.tex
+\par
+\endgroup
+
+\smallskip
+\looseness=-1
+Limiting the batch size increases the speed of testing, because it decreases the amount of work of every used \acro{CPU}. However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost and more \acro{CPU}s are used. Therefore, limiting the batch size increases the speed of testing but decreases energy-efficiency.
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
@@ -260,34 +291,6 @@ $ find -name '*.test' | parallel ./test.sh
 \end{verbatim}
 
 While Bash is convenient for simple programs, more complicated programs are best written in a more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}. The higher expressiveness of Python allowed us to implement the batching of test files, batch splitting, and error handling. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
-
-\subsection{Batch size limiting}
-
-When we use both multiprocessing and batching with large batch sizes, most \acro{CPU}s will be unused:
-
-\smallskip
-\noindent
-\begingroup
-\centering
-\input images/cpus-without-limiting.tex
-\par
-\endgroup
-
-\smallskip
-\noindent
-We can \emph{limit the batch size} so that all \acro{CPU}s are used:
-
-\smallskip
-\noindent
-\begingroup
-\centering
-\input images/cpus-with-limiting.tex
-\par
-\endgroup
-
-\smallskip
-\looseness=-1
-Limiting the batch size increases the speed of testing, because it decreases the amount of work of every used \acro{CPU}. However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost, as discussed in Section~\ref{sec:batching-of-test-files}, and more \acro{CPU}s are used. Therefore, limiting the batch size increases the speed of testing but decreases energy-efficiency.
 
 \section{Experiments}
 \label{sec:experiments}
