@@ -65,7 +65,7 @@ After the implementation of the CommonMark standard in version 3.0.0 of the Mark
 
 In order to increase the testing speed, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a 60-fold speed increase and which makes the tests practically useful to developers.
 
-In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} through \ref{sec:error-handling}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} through \ref{sec:error-handling-techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
 
 \section{On-disk files}
 \label{sec:on-disk-files}
@@ -158,8 +158,8 @@ Here are the commands \file{COMMANDS.m4} from Section~\ref{sec:formats-commands-
 \noindent
 During testing, the materialized commands are executed. Each command produces a \texttt{.log} file, which is compared to the expected output from the test file.
 
-\section{Techniques}
-\label{sec:techniques}
+\section{Computational techniques}
+\label{sec:computational-techniques}
 
 In this section, we describe the computational techniques of multiprocessing and the batching of test files. We also show how we use these techniques to increase the speed of testing in our framework. Furthermore, combining both techniques can lead to issues with memory and load balancing. In this section, we outline the issues and how we addressed them.
 \looseness=-1
@@ -239,8 +239,8 @@ Limiting the batch size increases the speed of testing, because every used \acro
 \label{lst:test.sh}
 \end{listing*}
 
-\section{Error handling}
-\label{sec:error-handling}
+\section{Error handling techniques}
+\label{sec:error-handling-techniques}
 
 XXX
 
@@ -289,13 +289,15 @@ When only one test file out of $N$ files in a batch causes a fatal error, batch 
 
 Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, see Listing~\ref{lst:test.sh}.
 
-At first, \file{test.sh} processed test files sequentially and did not use the techniques from Section~\ref{sec:techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
-
+At first, \file{test.sh} processed test files sequentially and did not use the computational techniques from Section~\ref{sec:computational-techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
 \begin{verbatim}
 $ find -name '*.test' | parallel ./test.sh
 \end{verbatim}
+Out of the error handling techniques from Section~\ref{sec:error-handling-techniques}, \file{test.sh} could only update test files.
 
-While Bash is convenient for simple programs, more complicated programs are best written in a more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}. The higher expressiveness of Python allowed us to implement the batching of test files, batch splitting, and error handling. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
+While Bash is convenient for simple programs, more complicated programs are best written in a more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}.
+
+Out of the techniques from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-techniques}, the higher expressiveness of Python allowed us to implement the batching of test files, failing fast, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
 
 \section{Experiments}
 \label{sec:experiments}
