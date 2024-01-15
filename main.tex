@@ -278,10 +278,6 @@ When only one test file out of $N$ files in a batch causes a fatal error, batch 
 \section{Implementation}
 \label{sec:implementation}
 
-In this section, we describe the implementation of our framework before and after version 3.0.0 of the Markdown package. Furthermore, the batching of test files caused issues with error reporting and multiprocessing. In this section, we outline the issues and how we addressed them in our implementation.
-
-\subsection{Before and after Markdown 3.0.0}
-
 Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, see Listing~\ref{lst:test.sh}.
 
 At first, \file{test.sh} processed test files sequentially and did not use the techniques from Section~\ref{sec:techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
