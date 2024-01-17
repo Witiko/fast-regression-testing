@@ -31,6 +31,10 @@
 \usepackage{./examples}
 \def\url{\tbsurl}
 \def\AllTeX{(\La\kern-.075em)\kern-.075em\TeX}
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\textcolor{red}{\ding{55}}}
+\renewcommand{\arraystretch}{1.2}
 
 %%% Start of metadata %%%
 \title{Fast Regression Testing of \TeX{} Packages: The Unreasonable Effectiveness of Batching}
@@ -65,7 +69,7 @@ After the implementation of the CommonMark standard in version 3.0.0 of the Mark
 
 In order to increase the testing speed, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a 60-fold speed increase and which makes the tests practically useful to developers.
 
-In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} through \ref{sec:error-handling-techniques}, we describe the on-disk files and techniques used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} through \ref{sec:error-handling-strategies}, we describe the on-disk files, techniques, and strategies used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
 
 \section{On-disk files}
 \label{sec:on-disk-files}
@@ -161,8 +165,7 @@ During testing, the materialized commands are executed. Each command produces a 
 \section{Computational techniques}
 \label{sec:computational-techniques}
 
-In this section, we describe the computational techniques of multiprocessing and the batching of test files. We also show how we use these techniques to increase the speed of testing in our framework. Furthermore, combining both techniques can lead to issues with memory and load balancing. In this section, we outline the issues and how we addressed them.
-\looseness=-1
+In this section, we describe the computational techniques of multiprocessing, the batching of test files, and batch size limiting. We also show how we use these techniques to increase the speed of testing in our framework.
 
 \subsection{Multiprocessing}
 \label{sec:multiprocessing}
@@ -201,9 +204,6 @@ To increase the speed of testing, we can amortize the cost of initialization by 
 \noindent
 Batching $N$ test files decreases initialization cost $N$ times. How much this speeds up testing depends on the ratio between the time spent on initialization and the time spent on processing the rest of the template.
 
-If tests use a lot of memory that is not immediately released, using multiprocessing and batching increases the memory footprint of testing. Specifically, using $M$ \acro{CPU}s and batching $N$ test files increases the memory footprint of testing up to $M\cdot N$ times. Therefore, $M$ and $N$ should be capped. For the Markdown package, we use at most 32 \acro{CPU}s and 50 test files.
-\looseness=-1
-
 \subsection{Batch size limiting}
 
 When we use both multiprocessing and batching with large batch sizes, most \acro{CPU}s will be unused:
@@ -239,17 +239,53 @@ Limiting the batch size increases the speed of testing, because every used \acro
 \label{lst:test.sh}
 \end{listing*}
 
-\section{Error handling techniques}
-\label{sec:error-handling-techniques}
+\section{Error handling strategies}
+\label{sec:error-handling-strategies}
 
-In this section, we describe the error handling techniques of updating test files, and failing fast. We also show how we use these techniques to increase the speed of development. Furthermore, the batching of test files can make it more difficult to find the cause of an error. In this section, we outline the issue and how we addressed it.
+In this section, we describe the error handling strategies of failing fast and slow, updating test files, and batch splitting. We also show how we use these strategies to increase the speed of development and decrease maintenance costs.
 
 \subsection{Failing fast}
 
-XXX
+In the practice of test-driven development (\acro{TDD}), before adding a new feature, developers first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all test files have passed. At the beginning, old test files will pass, whereas new test files will fail. At the end, all test files, both old and new, should pass.
+
+In order to increase the speed of development, tests should \emph{fail fast} to provide immediate feedback. Therefore, developers can configure our framework to start with new test files and stop at the first error.
+
+For example, imagine a \TeX{} package with two test files: \file{first.test} and \file{second.test}. For simplicity, the package has only one format with one template and commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines. Before the development of a new feature, developers add a new test file \file{third.test} and they run the tests with the following results:
+
+\medskip
+\noindent
+\begingroup
+\centering
+\input images/failing-fast
+\par
+\endgroup
+
+\medskip
+\noindent
+Since \file{third.test} was new, it was tested first and immediately failed, providing immediate feedback to developers. This is how we test all updates submitted to the GitHub repository of the Markdown package.
+
+\subsection{Failing slow}
+
+Tests can fail not just during the development of new features but also during maintenance. These failures are often caused by changes to external dependencies such as \TeX{} engines, formats, and packages.
+
+In order to decrease maintenance costs, tests should \emph{fail slow} to provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all failures.
+
+Continuing the example from the previous section, developers finish the new feature and release an updated version of their package on \acro{CTAN}. However, after a month, the tests fail with the following results:
+\looseness=-1
+
+\medskip
+\noindent
+\begingroup
+\centering
+\input images/failing-slow
+\par
+\endgroup
+
+\medskip
+\noindent
+At a glance, the summary shows that the failures are related to the \Hologo{XeTeX} engine. This is how we test the Markdown package every week.
 
 \subsection{Updating test files}
-In test-driven development, when developers want to add a new feature, they first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all tests pass.
 
 Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
 
@@ -295,11 +331,11 @@ At first, \file{test.sh} processed test files sequentially and did not use the c
 \begin{verbatim}
 $ find -name '*.test' | parallel ./test.sh
 \end{verbatim}
-Out of the error handling techniques from Section~\ref{sec:error-handling-techniques}, \file{test.sh} could only update test files.
+Out of the error handling strategies from Section~\ref{sec:error-handling-strategies}, \file{test.sh} could only update test files.
 
 While Bash is convenient for simple programs, more complicated programs are best written in a more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}.
 
-Out of the techniques from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-techniques}, the higher expressiveness of Python allowed us to implement the batching of test files, failing fast, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
+Out of the techniques and strategies from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-strategies}, the higher expressiveness of Python allowed us to implement the batching of test files, failing fast and slow, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
 
 \section{Experiments}
 \label{sec:experiments}
