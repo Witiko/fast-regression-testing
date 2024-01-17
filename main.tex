@@ -242,18 +242,20 @@ Limiting the batch size increases the speed of testing, because every used \acro
 \section{Error handling techniques}
 \label{sec:error-handling-techniques}
 
-XXX
-
-Furthermore, the batching of test files can make it more difficult to find the cause of an error. In this section, we outline the issue and how we addressed it.
-\looseness=-1
-
-\subsection{Updating test files}
-
-XXX
+In this section, we describe the error handling techniques of updating test files, and failing fast. We also show how we use these techniques to increase the speed of development. Furthermore, the batching of test files can make it more difficult to find the cause of an error. In this section, we outline the issue and how we addressed it.
 
 \subsection{Failing fast}
 
 XXX
+
+\subsection{Updating test files}
+In test-driven development, when developers want to add a new feature, they first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all tests pass.
+
+Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
+
+% Describe the updating of test files
+
+% Describe the finer details: Why would updating test files fail?
 
 \subsection{Batch splitting}
 
