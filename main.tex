@@ -242,7 +242,7 @@ Limiting the batch size increases the speed of testing, because every used \acro
 \section{Error handling strategies}
 \label{sec:error-handling-strategies}
 
-In this section, we describe the error handling strategies of failing fast and slow, updating test files, and batch splitting. We also show how we use these strategies to increase the speed of development and decrease maintenance costs.
+In this section, we describe the error handling strategies of failing fast and slowly, updating test files, and batch splitting. We also show how we use these strategies to increase the speed of development and decrease maintenance costs.
 
 \subsection{Failing fast}
 
@@ -264,11 +264,11 @@ For example, imagine a \TeX{} package with two test files: \file{first.test} and
 \noindent
 Since \file{third.test} was new, it was tested first and immediately failed, providing immediate feedback to developers. This is how we test all updates submitted to the GitHub repository of the Markdown package.
 
-\subsection{Failing slow}
+\subsection{Failing slowly}
 
 Tests can fail not just during the development of new features but also during maintenance. These errors are often caused by changes to external dependencies such as \TeX{} engines, formats, and packages.
 
-In order to decrease maintenance costs, tests should \emph{fail slow} to provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all errors.
+In order to decrease maintenance costs, tests should \emph{fail slowly} to provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all errors.
 
 Continuing the example from the previous section, developers finish the new feature and release an updated version of their package on \acro{CTAN}. However, after a month, the tests fail with the following results:
 \looseness=-1
@@ -277,7 +277,7 @@ Continuing the example from the previous section, developers finish the new feat
 \noindent
 \begingroup
 \centering
-\input images/failing-slow
+\input images/failing-slowly
 \par
 \endgroup
 
@@ -336,7 +336,7 @@ Out of the error handling strategies from Section~\ref{sec:error-handling-strate
 
 While Bash is convenient for simple programs, more complicated programs are best written in a more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}.
 
-Out of the techniques and strategies from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-strategies}, the higher expressiveness of Python allowed us to implement the batching of test files, failing fast and slow, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
+Out of the techniques and strategies from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-strategies}, the higher expressiveness of Python allowed us to implement the batching of test files, failing fast and slowly, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -424,6 +424,7 @@ In this study, we explored techniques for speeding up the regression testing of 
 Our techniques are general and can be used to speed up other testing frameworks for \TeX{} packages. The lessons learned from our work are as follows:
 \begin{itemize}
 \item Whereas \TeX{} only uses a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Multiprocessing puts these \acro{CPU}s to a good use and can increase testing speed with little effort.
+\item Whereas developers need tests to fail as fast as possible, maintainers benefit from a comprehensive summary of all errors.
 \item Writing small isolated test files is convenient for authors but carries a high initialization cost during testing. For \TeX{} packages such as the Markdown package, where the tests are easy to isolate, the batching of test files can be used to recover the initialization cost.
 \end{itemize}
 We believe that these advancements are likely to streamline the development cycles for \TeX{} packages.
