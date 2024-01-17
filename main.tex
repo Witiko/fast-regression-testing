@@ -246,7 +246,7 @@ In this section, we describe the error handling strategies of failing fast and s
 
 \subsection{Failing fast}
 
-In the practice of test-driven development (\acro{TDD}), before adding a new feature, developers first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all test files have passed. At the beginning, old test files will pass, whereas new test files will fail. At the end, all test files, both old and new, should pass.
+In the practice of test-driven development, before adding a new feature, developers first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all test files have passed. At the beginning, old test files will pass, whereas new test files will fail. At the end, all test files, both old and new, should pass.
 
 In order to increase the speed of development, tests should \emph{fail fast} to provide immediate feedback. Therefore, developers can configure our framework to start with new test files and stop at the first error.
 
@@ -266,9 +266,9 @@ Since \file{third.test} was new, it was tested first and immediately failed, pro
 
 \subsection{Failing slow}
 
-Tests can fail not just during the development of new features but also during maintenance. These failures are often caused by changes to external dependencies such as \TeX{} engines, formats, and packages.
+Tests can fail not just during the development of new features but also during maintenance. These errors are often caused by changes to external dependencies such as \TeX{} engines, formats, and packages.
 
-In order to decrease maintenance costs, tests should \emph{fail slow} to provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all failures.
+In order to decrease maintenance costs, tests should \emph{fail slow} to provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all errors.
 
 Continuing the example from the previous section, developers finish the new feature and release an updated version of their package on \acro{CTAN}. However, after a month, the tests fail with the following results:
 \looseness=-1
@@ -283,15 +283,15 @@ Continuing the example from the previous section, developers finish the new feat
 
 \medskip
 \noindent
-At a glance, the summary shows that the failures are related to the \Hologo{XeTeX} engine. This is how we test the Markdown package every week.
+At a glance, the summary shows that the errors are related to the \Hologo{XeTeX} engine. This is how we test the Markdown package every week.
 
 \subsection{Updating test files}
 
 Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
 
-% Describe the updating of test files
+In order to increase the speed of development, developers can configure our framework to \emph{update test files} instead of failing. Developers can make fundamental changes and our framework will update the expected outputs in test files to match the actual output. Furthermore, developers can also develop a feature, write partial test files for the feature that only contain the \TeX{} code and markdown text, and use our framework to fill in the expected output. After the update, developers can review the changes to determine whether they are correct.
 
-% Describe the finer details: Why would updating test files fail?
+Our framework will only update a test file if all templates and commands produce consistent outputs. In the example from the previous section, the command for the \Hologo{XeTeX} engine failed for all test files, whereas the other commands did not. Therefore, our framework would not update any test files and fail.
 
 \subsection{Batch splitting}
 
