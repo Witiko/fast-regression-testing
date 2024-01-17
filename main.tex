@@ -286,6 +286,7 @@ Continuing the example from the previous section, developers finish the new feat
 At a glance, the summary shows that the errors are related to the \Hologo{XeTeX} engine. This is how we test the Markdown package every week.
 
 \subsection{Updating test files}
+\label{sec:updating-test-files}
 
 Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
 
@@ -403,9 +404,11 @@ The l3build package~\cite{mittelbach2014l3build, wright2015automating, wright202
 
 Whereas our framework is written in Python, l3build is written in Lua. Each language presents its own set of strengths and weaknesses. On one hand, every modern installation of \TeX{} includes a Lua interpreter, which makes l3build more accessible for \TeX{} users compared to our framework. On the other hand, unlike Python, Lua has no built-in support for multiprocessing. Therefore, l3build users must use external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing.
 
-In the Markdown package, each test file is designed to hold a single self-contained test that avoids modifying the global state. This design allows for straightforward grouping of tests into batches, where each test is isolated from others using \TeX{} groups, as we discussed in Section~\ref{sec:batching-of-test-files}.
+In our framework, each test file is designed to hold a single self-contained test that avoids modifying the global state. This design allows for straightforward grouping of tests into batches, where each test is isolated from others using \TeX{} groups, as we discussed in Section~\ref{sec:batching-of-test-files}.
 
 In l3build, a single test file may contain multiple tests. These tests can be interdependent, creating a challenge in separating them from their respective files. Additionally, these tests might change the global state, which poses a risk of unexpected conflicts when tests are grouped into batches. Due to these complexities, l3build does not support the batching of tests. Nonetheless, the practice of including multiple tests in a single test file can be seen as a form of manual batching that amortizes the cost of initialization.
+
+Both our framework and l3build support the updating of test files~\cite[Section~2.7]{latex2023l3build}. This allows developers to automatically generate parts of test files when they make fundamental changes to the code or when they develop complex new features, as discussed in Section~\ref{sec:updating-test-files}.
 
 \subsection{Batching and batch splitting}
 The techniques of batching and batch splitting were perhaps first used with \TeX{} in the ARQMath competitions for large-scale indexing of math formulae.
