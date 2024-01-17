@@ -74,7 +74,8 @@ In this article, we describe the testing framework of the Markdown package. In s
 \section{On-disk files}
 \label{sec:on-disk-files}
 
-\looseness=-1
+In the future, an \acro{AI} agent might examine our changes and identify any regressions that we have introduced. For the moment, regression testing requires the manual creation of many on-disk files that describe the behavior of our code and how it should be validated.
+
 In this section, we describe the on-disk files used in our framework: test files, formats, commands, and templates. We also show how we use them for testing.
 
 \subsection{Test files}
@@ -164,6 +165,8 @@ During testing, the materialized commands are executed. Each command produces a 
 
 \section{Computational techniques}
 \label{sec:computational-techniques}
+
+While testing all combinations of test files, templates, and commands ensures comprehensive coverage of all potential configurations, it can be time-consuming.
 
 In this section, we describe the computational techniques of multiprocessing, the batching of test files, and batch size limiting. We also show how we use these techniques to increase the speed of testing in our framework.
 
