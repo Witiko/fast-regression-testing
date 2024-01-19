@@ -63,30 +63,31 @@ In this article, we describe a novel technique for batching test files that redu
 \section{Introduction}
 Small \TeX{} packages, typically developed in a single iteration rather than through ongoing updates, can depend on user feedback to maintain the code. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code.
 
-The Markdown package for \TeX{} features a series of regression tests, enabling developers to ensure that their modifications do not negatively impact existing functionality. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
+The Markdown package for \TeX{} also features a series of regression tests. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
+\looseness=-1
 
 After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about 5.5 times). This had caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
 
 In order to increase the testing speed, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a 60-fold speed increase and which makes the tests practically useful to developers.
 
-In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:on-disk-files} through \ref{sec:error-handling-strategies}, we describe the on-disk files, techniques, and strategies used in our framework. In Section~\ref{sec:implementation}, we describe our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:definition-files} through \ref{sec:error-handling-strategies}, we describe the definition files, techniques, and strategies used in our framework. In Section~\ref{sec:implementation}, we describe the details of our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
 
-\section{On-disk files}
-\label{sec:on-disk-files}
+\section{Definition files}
+\label{sec:definition-files}
 
-In the future, an \acro{AI} agent might examine our changes and identify any regressions that we have introduced. For the moment, regression testing requires the manual creation of many on-disk files that describe the behavior of our code and how it should be validated.
+In the future, an \acro{AI} agent might examine the code of a \TeX{} package and identify any incorrect behavior. For the moment, regression testing requires the manual creation of many definition files that describe the expected behavior and how it should be validated.
 
-In this section, we describe the on-disk files used in our framework: test files, formats, commands, and templates. We also show how we use them for testing.
+In this section, we describe the definition files used in our framework: test files, formats, commands, and templates.
 
 \subsection{Test files}
 \label{sec:test-files}
 
 \looseness=-1
-The Markdown package converts markdown text to \TeX{} commands. To validate the conversion, our framework redefines these \TeX{} commands to produce output in the \texttt{.log} file, which we can examine.
+The Markdown package converts markdown text to \TeX{} commands. To validate the conversion, our framework redefines these \TeX{} commands to produce output in the \texttt{.log} file, which we then examine.
 
 A \emph{test file} consists of a) \TeX{} code that configures the Markdown package, b) markdown text, and c) the expected output in the \texttt{.log} file.
 
-See example test file \file{strike-through.test}, which tests the strike-through syntax extension:
+An example test file \file{strike-through.test} tests the strike-through syntax extension:
 
 \smallskip
 \noindent
@@ -100,7 +101,7 @@ The Markdown package supports several combinations of \TeX{} formats and engines
 
 A \emph{format} consists of one or more a) \emph{commands} that can be used to typeset documents in a \TeX{} format using different \TeX{} engines and b) \emph{templates} that specify the different ways in which markdown text can be input with the \TeX{} format.
 
-Here is an example format \texttt{plain} with commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines:
+An example format \texttt{plain} contains commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines:
 
 \smallskip
 \noindent
@@ -131,7 +132,7 @@ The format \texttt{plain} also contains two templates. One uses the \cs{markdown
 \subsection{Materialized templates and commands}
 \label{sec:materialized-templates-and-commands}
 
-During testing, the texts \texttt{TEST\_SETUP\_FILENAME} and \texttt{TEST\_INPUT\_FILENAME} in a template are replaced with names of files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Additionally, the text \texttt{undivert(TEST\_INPUT\_FILENAME)} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
+During testing, the texts \texttt{TEST\_SETUP\_FILENAME} and \texttt{TEST\_INPUT\_FILENAME} in templates are replaced with names of auxiliary files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Additionally, the text {\small\texttt{undivert(TEST\_INPUT\_FILENAME)}} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
 
 Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-commands-and-templates} after it has been materialized with the test file \file{strike-through.test} from Section~\ref{sec:test-files}:
 
@@ -149,7 +150,7 @@ Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-comman
 
 \smallskip
 
-After a template has been materialized, the text \texttt{TEST\_FILENAME} in a command is replaced with the filename of the materialized template. After the replacement, the command has also been materialized.
+After a template has been materialized, the text \texttt{TEST\_FILENAME} in all commands is replaced with the filename of the materialized template. After the replacement, the command has also been materialized.
 
 Here are the commands \file{COMMANDS.m4} from Section~\ref{sec:formats-commands-and-templates} after they have been materialized:
 
@@ -168,7 +169,8 @@ During testing, the materialized commands are executed. Each command produces a 
 
 While testing all combinations of test files, templates, and commands ensures comprehensive coverage of all potential configurations, it can be time-consuming.
 
-In this section, we describe the computational techniques of multiprocessing, the batching of test files, and batch size limiting. We also show how we use these techniques to increase the speed of testing in our framework.
+In this section, we describe the computational techniques of multiprocessing, the batching of test files, and how they increase the speed of testing in our framework.
+Furthermore, the batching of test files raises challenges with load balancing and the attribution of errors. We discuss the challenges and describe the computational techniques of batch size limiting and batch splitting that address these challenges.
 
 \subsection{Multiprocessing}
 \label{sec:multiprocessing}
@@ -188,7 +190,7 @@ Using $N$ \acro{CPU}s increases testing speed up to $N$ times.
 
 \subsection{Batching of test files}
 \label{sec:batching-of-test-files}
-At the beginning of a \TeX{} document, \TeX{} packages, fonts, Lua scripts, and other assets are initialized, which slows down testing:
+At the beginning of a document, \TeX{} initializes packages, fonts, Lua scripts, and other assets, which slows down testing:
 
 \smallskip
 \noindent
@@ -242,61 +244,6 @@ Limiting the batch size increases the speed of testing, because every used \acro
 \label{lst:test.sh}
 \end{listing*}
 
-\section{Error handling strategies}
-\label{sec:error-handling-strategies}
-
-In this section, we describe the error handling strategies of failing fast and slowly, updating test files, and batch splitting. We also show how we use these strategies to increase the speed of development and decrease maintenance costs.
-
-\subsection{Failing fast}
-
-In the practice of test-driven development, before adding a new feature, developers first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all test files have passed. At the beginning, old test files will pass, whereas new test files will fail. At the end, all test files, both old and new, should pass.
-
-In order to increase the speed of development, tests should \emph{fail fast} to provide immediate feedback. Therefore, developers can configure our framework to start with new test files and stop at the first error.
-
-For example, imagine a \TeX{} package with two test files: \file{first.test} and \file{second.test}. For simplicity, the package has only one format with one template and commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines. Before the development of a new feature, developers add a new test file \file{third.test} and they run the tests with the following results:
-
-\medskip
-\noindent
-\begingroup
-\centering
-\input images/failing-fast
-\par
-\endgroup
-
-\medskip
-\noindent
-Since \file{third.test} was new, it was tested first and immediately failed, providing immediate feedback to developers. This is how we test all updates submitted to the GitHub repository of the Markdown package.
-
-\subsection{Failing slowly}
-
-Tests can fail not just during the development of new features but also during maintenance. These errors are often caused by changes to external dependencies such as \TeX{} engines, formats, and packages.
-
-In order to decrease maintenance costs, tests should \emph{fail slowly} to provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all errors.
-
-Continuing the example from the previous section, developers finish the new feature and release an updated version of their package on \acro{CTAN}. However, after a month, the tests fail with the following results:
-\looseness=-1
-
-\medskip
-\noindent
-\begingroup
-\centering
-\input images/failing-slowly
-\par
-\endgroup
-
-\medskip
-\noindent
-At a glance, the summary shows that the errors are related to the \Hologo{XeTeX} engine. This is how we test the Markdown package every week.
-
-\subsection{Updating test files}
-\label{sec:updating-test-files}
-
-Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
-
-In order to increase the speed of development, developers can configure our framework to \emph{update test files} instead of failing. Developers can make fundamental changes and our framework will update the expected outputs in test files to match the actual output. Furthermore, developers can also develop a feature, write partial test files for the feature that only contain the \TeX{} code and markdown text, and use our framework to fill in the expected output. After the update, developers can review the changes to determine whether they are correct.
-
-Our framework will only update a test file if all templates and commands produce consistent outputs. In the example from the previous section, the command for the \Hologo{XeTeX} engine failed for all test files, whereas the other commands did not. Therefore, our framework would not update any test files and fail.
-
 \subsection{Batch splitting}
 
 \looseness=-1
@@ -326,6 +273,63 @@ When only one test file out of $N$ files in a batch causes a fatal error, batch 
 \par
 \endgroup
 
+\section{Error handling strategies}
+\label{sec:error-handling-strategies}
+
+Developers and maintainers have different needs when it comes to the handling of errors. Whereas developers need immediate feedback during the development of new features, maintainers require a comprehensive summary of all errors when they deal with unexpected breakage.
+
+In this section, we describe the error handling strategies of developer- and maintainer-oriented testing and updating test files. We also discuss how these strategies increase the speed of development and decrease maintenance costs.
+
+\subsection{Developer-oriented testing}
+
+In the practice of test-driven development, before adding a new feature, developers first write new test files that describe the expected behavior of the feature. Then, they develop the feature until all test files have passed. At the beginning, old test files will pass, whereas new test files will fail. At the end, all test files, both old and new, should pass.
+
+In order to increase the speed of development, tests should fail fast to provide immediate feedback. Therefore, developers can configure our framework to start with the new test files, which are the most likely to fail, and stop at the first error rather than wait until all tests have finished.
+
+For example, imagine a \TeX{} package with two test files: \file{first.test} and \file{second.test}. For simplicity, the package has only one format with one template and with three commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines. Before the development of a new feature, developers add a new test file \file{third.test} and they run the tests with the following results:
+
+\medskip
+\noindent
+\begingroup
+\centering
+\input images/developer-focused-testing
+\par
+\endgroup
+
+\medskip
+\noindent
+Since \file{third.test} was new, it was tested first and immediately failed, providing immediate feedback to developers. This is how we test all updates submitted to the GitHub repository of the Markdown package.
+
+\subsection{Maintainer-focused testing}
+
+Tests can fail not just during the development of new features but also during maintenance. These errors are often caused by changes to external dependencies such as \TeX{} engines, formats, and packages.
+
+In order to decrease maintenance costs, tests should provide comprehensive feedback. Therefore, maintainers can configure our framework to always process all test files and produce a helpful summary of all errors.
+
+Continuing the example from the previous section, developers finish the new feature and release an updated version of their package on \acro{CTAN}. However, after a month, the tests fail with the following results:
+\looseness=-1
+
+\medskip
+\noindent
+\begingroup
+\centering
+\input images/maintainer-focused-testing
+\par
+\endgroup
+
+\medskip
+\noindent
+At a glance, the summary shows that the errors are related to the \Hologo{XeTeX} engine. This is how we test the Markdown package every week.
+
+\subsection{Updating test files}
+\label{sec:updating-test-files}
+
+Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
+
+In order to increase the speed of development, developers can configure our framework to \emph{update test files} instead of failing. Developers can make fundamental changes and our framework will update the expected outputs in test files to match the actual output. Furthermore, developers can also develop a feature, write partial test files for the feature that only contain the \TeX{} code and markdown text, and use our framework to fill in the expected output. Then, developers can review the changes and determine whether they are correct.
+
+Our framework will only update a test file if all templates and commands produce consistent outputs. In the example from the previous section, the command for the \Hologo{XeTeX} engine failed for all test files, whereas the other commands did not. Therefore, our framework would not update any test files and fail.
+
 \section{Implementation}
 \label{sec:implementation}
 
@@ -339,7 +343,7 @@ Out of the error handling strategies from Section~\ref{sec:error-handling-strate
 
 While Bash is convenient for simple programs, more complicated programs are best written in a more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}.
 
-Out of the techniques and strategies from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-strategies}, the higher expressiveness of Python allowed us to implement the batching of test files, failing fast and slowly, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
+Out of the techniques and strategies from Sections~\ref{sec:computational-techniques} and \ref{sec:error-handling-strategies}, the higher expressiveness of Python allowed us to implement the batching of test files, developer- and maintainer-oriented testing, and batch splitting. Furthermore, Python's built-in support for multiprocessing allowed us to stop using \acro{GNU} Parallel and implement batch size limiting.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -395,7 +399,7 @@ The solution shows that whereas it takes $X\approx\text{8.47 seconds}$ to initia
 \subsection{Batch size limiting}
 The speed improvements from multiprocessing and batching are additive up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about 161-fold speed-up).
 
-When the number of \acro{CPU}s multiplied by the batch size exceeds the number of test files (783), we cannot use all \acro{CPU}s and the testing speed decreases. Whereas with 32~\acro{CPU}s and batch size 16, the median testing time is only 11~minutes, it is 1~hour and 24~minutes with the same number of \acro{CPU}s and batch size 1024 (about 8-fold slow-down). Our framework prevents this by limiting the batch size.
+When the number of \acro{CPU}s multiplied by the batch size exceeds the number of test files (783), we cannot use all \acro{CPU}s and the testing speed decreases. Whereas with 32~\acro{CPU}s and batch size 16, the median testing time is only 11~minutes, it is 1~hour and 24~minutes with the same number of \acro{CPU}s and batch size 1024 (about 8-fold slow-down). Our framework prevents this effect by limiting the batch size.
 
 \section{Related work}
 \label{sec:related-work}
@@ -405,32 +409,36 @@ In this section, we discuss prior work related to our framework.
 \subsection{The l3build package}
 The l3build package~\cite{mittelbach2014l3build, wright2015automating, wright2022l3build, latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
 
-Whereas our framework is written in Python, l3build is written in Lua. Each language presents its own set of strengths and weaknesses. On one hand, every modern installation of \TeX{} includes a Lua interpreter, which makes l3build more accessible for \TeX{} users compared to our framework. On the other hand, unlike Python, Lua has no built-in support for multiprocessing. Therefore, l3build users must use external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing.
+Whereas our framework is written in Python, l3build is written in Lua. Each language presents its own set of strengths and weaknesses. On one hand, every modern installation of \TeX{} includes a Lua interpreter, which makes l3build more accessible for \TeX{} users compared to our framework. On the other hand, unlike Python, Lua has no built-in support for multiprocessing. Therefore, l3build users must use external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing, whereas our framework can use multiple \acro{CPU}s out-of-box.
 
 In our framework, each test file is designed to hold a single self-contained test that avoids modifying the global state. This design allows for straightforward grouping of tests into batches, where each test is isolated from others using \TeX{} groups, as we discussed in Section~\ref{sec:batching-of-test-files}.
 
-In l3build, a single test file may contain multiple tests. These tests can be interdependent, creating a challenge in separating them from their respective files. Additionally, these tests might change the global state, which poses a risk of unexpected conflicts when tests are grouped into batches. Due to these complexities, l3build does not support the batching of tests. Nonetheless, the practice of including multiple tests in a single test file can be seen as a form of manual batching that amortizes the cost of initialization.
+In l3build, a single test file may contain multiple tests. These tests can be interdependent, creating a challenge in separating them from their files. Additionally, these tests might change the global state, which poses a risk of unexpected conflicts when tests are grouped into batches. Due to these complexities, l3build does not support the batching of tests. Nonetheless, the practice of including multiple tests in a single test file can be seen as a form of manual batching that amortizes the cost of initialization.
 
 Both our framework and l3build support the updating of test files~\cite[Section~2.7]{latex2023l3build}. This allows developers to automatically generate parts of test files when they make fundamental changes to the code or when they develop complex new features, as discussed in Section~\ref{sec:updating-test-files}.
 
 \subsection{Batching and batch splitting}
-The techniques of batching and batch splitting were perhaps first used with \TeX{} in the ARQMath competitions for large-scale indexing of math formulae.
+The techniques of batching and batch splitting were perhaps first used with \TeX{} in the ARQMath competitions in large-scale indexing of math formulae.
 
 In the first ARQMath competition, the \acro{MIRMU} team used the \LaTeX ML tool to convert \TeX{} formulae to the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, a single error would cause the loss of an entire batch. Therefore, \acro{MIRMU} used batch splitting to recover correct formulae after an error.~\cite{novotny2020arqmath} The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
+
+In the third ARQMath competition, the organizers used the same techniques to provide math formulae in the \acro{XML} format to participants.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Larger \TeX{} projects commonly use regression tests to ensure code integrity over time.
-In this study, we explored techniques for speeding up the regression testing of \TeX{} packages. We have shown that batching test files can improve the testing efficiency from 5\% to 97\%. We have also shown that multiprocessing on 32 \acro{CPU}s combined with batching increases testing speed up to 161 times.
+Larger \TeX{} packages commonly use regression tests to ensure code integrity over time.
+In this study, we explored techniques for speeding up the regression testing of \TeX{} packages. We have shown that batching test files can improve the testing efficiency from 5\% to 97\%. We have also shown that multiprocessing on 32 \acro{CPU}s combined with the batching of test files increases testing speed up to 161 times.
 
-Our techniques are general and can be used to speed up other testing frameworks for \TeX{} packages. The lessons learned from our work are as follows:
+The lessons learned from our work are as follows:
+
 \begin{itemize}
-\item Whereas \TeX{} only uses a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Multiprocessing puts these \acro{CPU}s to a good use and can increase testing speed with little effort.
+\item Whereas \TeX{} only uses a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Multiprocessing can increase testing speed by using these \acro{CPU}s.
+\item Writing small isolated test files is convenient for authors but carries a high initialization cost during testing. For \TeX{} packages such as the Markdown package, where tests are easy to isolate, the batching of test files can be used to recover the initialization cost.
 \item Whereas developers need tests to fail as fast as possible, maintainers benefit from a comprehensive summary of all errors.
-\item Writing small isolated test files is convenient for authors but carries a high initialization cost during testing. For \TeX{} packages such as the Markdown package, where the tests are easy to isolate, the batching of test files can be used to recover the initialization cost.
 \end{itemize}
-We believe that these advancements are likely to streamline the development cycles for \TeX{} packages.
+
+We hope that our practical lessons will improve the regression testing practices used in the development and maintenance of \TeX{} packages. With fast regression testing, developers can quickly introduce new features, while maintainers can proactively address emerging issues before they affect users.
 
 \medskip
 \noindent
