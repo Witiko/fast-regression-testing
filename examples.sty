@@ -41,10 +41,12 @@
   }
 \NewDocumentCommand
   \largeIcon
-  { m }
+  { d()m }
   {
-    \large_icon:n
-      { #1 }
+    \IfNoValueTF {#1}
+		{\large_icon:n}
+		{\large_icon:nn {#1}}
+      { #2 }
   }
 \NewDocumentCommand
   \exampleSeparator
@@ -65,15 +67,15 @@
       { #2 }
   }
 % Implementation
+\cs_new:Nn \icon_node:n {
+	\tikz\node[\l_tmpa_tl]{};
+}
 \cs_new:Nn
   \small_icon:n
   {
     \icon:n
       { #1 }
-    \raisebox{-1.4pt}{\begin{tikzpicture}
-      \fill[white] (-0.15,-0.16) -- (0.14,-0.16) -- (0.14,0.09) -- (0.05,0.16) -- (-0.15,0.16) -- cycle;
-      \node[inner~sep=0pt, outer~sep=0pt] at (0,0) {\tl_use:N \l_tmpa_tl};
-    \end{tikzpicture}}
+    \raisebox{-1.4pt}{\icon_node:n {mininum~height=\ht\strutbox}}
   }
 \cs_new:Nn
   \large_icon:n
@@ -85,25 +87,31 @@
       { , }
       { #1 }
       {
-        \fontsize{30}{30}
-        \selectfont
-        \raisebox{-5.5pt}{\begin{tikzpicture}
-          \fill[white] (0.6,-0.35) rectangle (1.4,-1.35);
-          \node[inner~sep=0pt, outer~sep=0pt] at (1,-0.85) {\tl_use:N \l_tmpa_tl};
-          \fill[white] (0.9,-0.05) rectangle (1.7,-1.05);
-          \node[inner~sep=0pt, outer~sep=0pt] at (1.3,-0.55) {\tl_use:N \l_tmpa_tl};
-          \fill[white] (1.2,0.35) rectangle (2,-0.65);
-          \node[inner~sep=0pt, outer~sep=0pt] at (1.6,-0.15) {\tl_use:N \l_tmpa_tl};
+        \raisebox{-5.5pt}{\begin{tikzpicture}[every~node/.style={\l_tmpa_tl,fill=white,draw=black,}]
+          \node at (1,-0.85) {};
+          \node at (1.3,-0.55) {};
+          \node at (1.6,-0.15) {};
         \end{tikzpicture}}
         \vspace{0.05cm}
       }
       {
-        \fontsize{45}{45}
-        \selectfont
-        \tl_use:N \l_tmpa_tl
+        \icon_node:n {}
       }
     \group_end:
   }
+  
+\cs_set:Nn
+\large_icon:nn
+{
+  \icon:n
+    { #2 }
+       \begin{scope}[every~node/.style={\l_tmpa_tl,fill=white,draw=black,scale=.5},shift={(#1)},scale=.5]
+         \node at (1,-0.85) {};
+         \node at (1.3,-0.55) {};
+         \node at (1.6,-0.15) {};
+         \end{scope}
+}
+    
 \cs_new:Nn
   \icon:n
   {
@@ -113,12 +121,12 @@
       {
         \tl_set:Nn
           \l_tmpa_tl
-          { \faFileTextO }
+          {text-document}
       }
       {
         \tl_set:Nn
           \l_tmpa_tl
-          { \faFileCodeO }
+          { code-document}
       }
   }
 \cs_new:Nn
@@ -148,9 +156,9 @@
 \cs_new:Nn
   \file:n
   {
-    \small_icon:n
-      { #1 }
-    \,
+%    \small_icon:n
+%      { #1 }
+%    \,
     \texttt { #1 }
   }
 \cs_new:Nn
@@ -244,3 +252,154 @@
     \raisebox{-53pt}{\scalebox{-1.5}[1.5]{\rotatebox[origin=m]{90}{$\Lsh$}}}
     \end{minipage}
   }
+
+\ExplSyntaxOff
+%%%%%%%%%%%%%%%%%%%%%%%%
+% Start of document shape definition
+%%%%%%%%%%%%%%%%%%%%%%%%
+\pgfkeyssetvalue{/tikz/document-corner}{.8}
+\pgfkeyssetvalue{/tikz/document-text-lines}{3}
+
+\newif\ifDocumentWithText
+\pgfkeys{/document/with text/.is if=DocumentWithText}
+
+\pgfsetshapeaspect{0.707}%
+\pgfdeclareshape{document}
+{%
+  \savedanchor\outernortheast{%
+    %
+    % Calculate width and height of the inner rectangle
+    %
+    \pgf@xa=.5\wd\pgfnodeparttextbox%
+    \pgfmathsetlength\pgf@xc{\pgfkeysvalueof{/pgf/inner xsep}}%
+    \advance\pgf@xa by\pgf@xc%
+    \pgf@ya=.5\ht\pgfnodeparttextbox%
+    \advance\pgf@ya by.5\dp\pgfnodeparttextbox%
+    \pgfmathsetlength\pgf@yc{\pgfkeysvalueof{/pgf/inner ysep}}%
+    \advance\pgf@ya by\pgf@yc%
+    %
+    % Calculate width and height of diamond
+    %
+    \pgf@x=\pgf@xa%
+    \advance\pgf@x by\pgfshapeaspect\pgf@ya%
+    \pgf@y=\pgfshapeaspectinverse\pgf@xa%
+    \advance\pgf@y by\pgf@ya%
+%    %
+    % Check against minimum height/width
+    %
+    \pgfmathsetlength\pgf@xb{\pgfkeysvalueof{/pgf/minimum width}}%
+    \pgf@xb=.5\pgf@xb%
+    \ifdim\pgf@x<\pgf@xb%
+      % yes, too small. Enlarge...
+      \pgf@x=\pgf@xb%
+      \pgf@y=\pgfshapeaspectinverse\pgf@x%
+    \fi%
+    \pgfmathsetlength\pgf@yb{\pgfkeysvalueof{/pgf/minimum height}}%
+    \pgf@yb=.5\pgf@yb%
+    \ifdim\pgf@y<\pgf@yb%
+      % yes, too small. Enlarge...
+      \pgf@y=\pgf@yb%
+      \pgf@x=\pgfshapeaspect\pgf@yb%
+    \fi%
+    %
+    % Add outer border
+    %
+    \pgfmathsetlength\pgf@xa{\pgfkeysvalueof{/pgf/outer xsep}}%
+    \advance\pgf@x by\pgf@xa%
+    \pgfmathsetlength\pgf@ya{\pgfkeysvalueof{/pgf/outer ysep}}%
+    \advance\pgf@y by\pgf@ya%
+  }%
+  \savedanchor\text{%
+    \pgf@x=-.5\wd\pgfnodeparttextbox%
+    \pgf@y=-.7\ht\pgfnodeparttextbox%
+    \advance\pgf@y by \pgf@y%
+    \advance\pgf@y by.5\dp\pgfnodeparttextbox%
+  }%
+
+  %
+  % Anchors
+  %
+  \anchor{text}{\text}%
+  \anchor{center}{\pgfpointorigin}%
+  \anchor{mid}{%
+    \pgf@process{\text}%
+    \pgf@x=0pt%
+    \pgfmathsetlength\pgf@ya{.5ex}%
+    \advance\pgf@y by\pgf@ya%
+  }%
+  \anchor{base}{\pgf@process{\text}\pgf@x=0pt}%
+  \anchor{north}{\pgf@process{\outernortheast}\pgf@x=0pt}%
+  \anchor{south}{\pgf@process{\outernortheast}\pgf@x=0pt\pgf@y=-\pgf@y}%
+  \anchor{west}{\pgf@process{\outernortheast}\pgf@x=-\pgf@x\pgf@y=0pt}%
+  \anchor{north west}{\pgf@process{\outernortheast}\pgf@x=-.5\pgf@x\pgf@y=.5\pgf@y}%
+  \anchor{south west}{\pgf@process{\outernortheast}\pgf@x=-.5\pgf@x\pgf@y=-.5\pgf@y}%
+  \anchor{east}{\pgf@process{\outernortheast}\pgf@y=0pt}%
+  \anchor{north east}{\pgf@process{\outernortheast}\pgf@x=.5\pgf@x\pgf@y=.5\pgf@y}%
+  \anchor{south east}{\pgf@process{\outernortheast}\pgf@x=.5\pgf@x\pgf@y=-.5\pgf@y}%
+  \anchorborder{%
+    \pgf@xa=\pgf@x%
+    \pgf@ya=\pgf@y%
+    \pgf@process{\outernortheast}%
+    \ifdim\pgf@xa>0pt%
+    \else%
+      \pgf@x=-\pgf@x%
+    \fi%
+    \ifdim\pgf@ya>0pt%
+    \else%
+      \pgf@y=-\pgf@y%
+    \fi%
+    \edef\pgf@marshal{%
+      \noexpand\pgfpointintersectionoflines
+      {\noexpand\pgfpointorigin}
+      {\noexpand\pgfqpoint{\the\pgf@xa}{\the\pgf@ya}}
+      {\noexpand\pgfqpoint{\the\pgf@x}{0pt}}
+      {\noexpand\pgfqpoint{0pt}{\the\pgf@y}}%
+    }%
+    \pgf@process{\pgf@marshal}%
+  }%
+
+  %
+  % Background path
+  %
+  \backgroundpath{
+    \pgf@process{\outernortheast}%
+%    \pgfsetroundcap
+    \pgf@xc=\pgf@x%
+    \pgf@yc=\pgf@y%
+	\pgfsetroundjoin
+	\pgfsetroundcap
+    \pgfmathsetlength{\pgf@xa}{\pgfkeysvalueof{/pgf/outer xsep}}%
+    \pgfmathsetlength{\pgf@ya}{\pgfkeysvalueof{/pgf/outer ysep}}%
+    \advance\pgf@xc by-1.414213\pgf@xa%
+    \advance\pgf@yc by-1.414213\pgf@ya%
+    \pgfpathmoveto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}{0pt}}}%
+    \pgfpathlineto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{0pt}{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}}}%
+     \pgfpathlineto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}{0pt}}}%
+    \pgfpathlineto {\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{0pt}{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}}}%
+    \pgfpathlineto{\pgfqpoint{\pgf@xc}{-\pgf@yc}}%
+    \pgfpathlineto{\pgfqpoint{-\pgf@xc}{-\pgf@yc}}%
+    \pgfpathlineto{\pgfqpoint{-\pgf@xc}{\pgf@yc}}%
+	\pgfpathclose
+    \pgf@process{\outernortheast}%
+    \pgfpathmoveto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}}}%
+    \pgfpathlineto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{0pt}{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}}}%
+    \pgfpathmoveto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}}}%
+    \pgfpathlineto{\pgfpointadd{\pgfqpoint{\pgf@xc}{\pgf@yc}}{\pgfpoint{-\pgfkeysvalueof{/tikz/document-corner}\pgf@xc}{0pt}}}%
+    %
+    \ifDocumentWithText
+    \foreach \y in {-.8,-.4,0} {
+		\pgfpathmoveto{\pgfpointadd{\pgfqpoint{-.65\pgf@xc}{0pt}}{\pgfpoint{0}{\y\pgf@xc}}}%
+		\pgfpathlineto{\pgfpointadd{\pgfpoint{.65\pgf@xc}{0pt}}{\pgfpoint{0}{\y\pgf@xc}}}%
+    }
+   \fi
+  }%
+}%
+
+\tikzset{
+	code-document/.style={document,fill=white,very thick,minimum height=45pt,draw=black,node contents=\ttfamily</>},
+	text-document/.style={document,very thick,fill=white, /document/with text=true,draw=black,minimum height=45pt},
+}
+%%%%%%%%%%%%%%%%%%%%%%%%
+% End of document shape definition
+%%%%%%%%%%%%%%%%%%%%%%%%
+\ExplSyntaxOn
