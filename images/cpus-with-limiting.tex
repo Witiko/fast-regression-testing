@@ -3,7 +3,7 @@
 \begin{tikzpicture}[every node/.style={inner sep=0pt}]
 \foreach \coord/\name in {{(0,0)}/first,{(2.7,0.3)}/second,{(5.4,0)}/third} {
 	\node (\name-cpu) at \coord  {\includegraphics[height=4\baselineskip]{images/CPU-drawing}};
-	\node[anchor=north,text-document,fill=white,minimum height=2\baselineskip] at ($(\name-cpu)+(17.75pt, 20pt)$) {};
+	\node[anchor=north,text-document,fill=white,minimum height=2\baselineskip] at ($(\name-cpu)+(16pt, 21pt)$) {};
 }
 \node[below=.3ex] at (first-cpu.south) { used };
 \node[below=.3ex] at (second-cpu.south) { used };

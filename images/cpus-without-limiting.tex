@@ -2,7 +2,7 @@
 \foreach \coord/\name in {{(0,0)}/first,{(2.7,0.3)}/second,{(5.4,0)}/third} {
 	\node (\name-cpu) at \coord  {\includegraphics[height=4\baselineskip]{images/CPU-drawing}};
 }
-\largeIcon ($(first-cpu.east) + (-21pt, 6pt)$) {first.test, second.test, third.test}
+\largeIcon ($(first-cpu)+(-1pt, 18pt)$) {first.test, second.test, third.test}
 \node[below=.3ex] at (first-cpu.south) { used };
 \node[below=.3ex] at (second-cpu.south) { unused };
 \node[below=.3ex] at (third-cpu.south) { unused };
