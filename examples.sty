@@ -311,11 +311,13 @@
   }%
   \savedanchor\text{%
     \pgf@x=-.5\wd\pgfnodeparttextbox%
-    \pgf@y=-.7\ht\pgfnodeparttextbox%
-    \advance\pgf@y by \pgf@y%
+    \pgf@y=-.5\ht\pgfnodeparttextbox%
     \advance\pgf@y by.5\dp\pgfnodeparttextbox%
-  }%
-
+    \pgfmathsetlength\pgf@yc{\pgfkeysvalueof{/pgf/inner ysep}}%
+    \advance\pgf@y by -\pgf@yc%
+    \pgfmathsetlength\pgf@yc{\pgfkeysvalueof{/tikz/document-corner}\pgf@x}%
+    \advance\pgf@y by .5\pgf@yc%
+  }
   %
   % Anchors
   %
