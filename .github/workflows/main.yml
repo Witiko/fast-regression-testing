@@ -19,12 +19,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Typeset article
-        run: latexmk -pdf -Werror main.tex
+        run: latexmk -pdf -Werror tb139starynovotny-testing.ltx
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: main
-          path: main.pdf
+          name: tb139starynovotny-testing
+          path: tb139starynovotny-testing.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -33,4 +33,4 @@ jobs:
           automatic_release_tag: latest
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          files: main.pdf
+          files: tb139starynovotny-testing.pdf

@@ -7,10 +7,10 @@ TUGboat 45(1).
 You can typeset the article by running the following command:
 
 ```
-latexmk -pdf main.tex
+latexmk -pdf tb139starynovotny-testing.ltx
 ```
 
-After running the command, a file [`main.pdf`][1] with the typeset article will
-be created.
+After running the command, a file [`tb139starynovotny-testing.pdf`][1] with the
+typeset article will be created.
 
- [1]: https://github.com/witiko/fast-regression-testing/releases/download/latest/main.pdf
+ [1]: https://github.com/witiko/fast-regression-testing/releases/download/latest/tb139starynovotny-testing.pdf
