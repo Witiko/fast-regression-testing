@@ -250,7 +250,7 @@ When we test batches of test files, a \texttt{.log} file is split into sections 
 
 Here is how we would split a batch of test files \file{first.test}, \file{second.test}, and \file{third.test}, where \file{second.test} causes a fatal error:
 
-\medskip
+\smallskip
 \noindent
 \begingroup
 \centering
@@ -258,12 +258,13 @@ Here is how we would split a batch of test files \file{first.test}, \file{second
 \par
 \endgroup
 
-\medskip
+\smallskip
 \noindent
 First, we try processing all files together but encounter a fatal error. Therefore, we divide the files into two groups: one with \file{first.test} and the other with \file{second.test} and \file{third.test}. Processing these separately, we again face a fatal error in the group with \file{second.test} and \file{third.test}. We then split this group into two individual files, \file{second.test} and \file{third.test}, and we process them. The fatal error occurs with \file{second.test}, which we identify as the cause of the error.
 
 When only one test file out of $N$ files in a batch causes a fatal error, batch splitting executes at most $2 (\log_2 N + 1)$ commands. This is less than or equal to $N$ for sufficiently large batch sizes $N\geq 8$. Therefore, in the presence of no more than a few fatal errors, batching is still faster than sequential processing.
 
+\smallskip
 \noindent
 \begingroup
 \input images/wolf-experiment
