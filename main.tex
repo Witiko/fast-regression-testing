@@ -7,7 +7,8 @@
 %   texdoc tugboat
 
 \documentclass[final]{ltugboat}
-
+\usepackage[T1]{fontenc} % tt \_
+\def\ARQMath{\acro{ARQM}ath}
 \usepackage{amsmath}
 \usepackage{microtype}
 \usepackage{graphicx}
@@ -30,23 +31,28 @@
 \usetikzlibrary{calc,decorations.pathreplacing,shapes}
 \usepackage{./examples}
 \def\url{\tbsurl}
-\def\AllTeX{(\La\kern-.075em)\kern-.075em\TeX}
+\def\xAllTeX{(\La\kern-.075em)\kern-.075em\TeX} % i prefer our spacing :)
 \usepackage{pifont}
 \newcommand{\cmark}{\ding{51}}
 \newcommand{\xmark}{\textcolor{red}{\ding{55}}}
 \renewcommand{\arraystretch}{1.3}
 
+% silence font warnings:
+% LaTeX Font Warning: Font shape `OT1/cmr/m/n' in size <45> not available
+% (Font)              size <24.88> substituted on input line 94.
+\makeatletter\def\@font@warning#1{}\makeatother
+
 %%% Start of metadata %%%
-\title{Fast Regression Testing of \TeX{} Packages: The Unreasonable Effectiveness of Batching}
+\title{Fast regression testing of \TeX{} packages: The~unreasonable effectiveness of batching}
 
 % repeat info for each author; comment out items that don't apply.
 \author{Vít Starý Novotný}
-\address{Studená 453/15 \\ Brno, 63800 \\ Czech Republic}
+\address{Studená 453/15 \\ Brno 63800, Czech Republic}
 \netaddress{witiko (at) mail dot muni dot cz}
 \personalURL{github.com/witiko}
 
 \author{Marei Peischl}
-\address{Gneisenaustr. 18 \\ Hamburg, 20253 \\ Germany}
+\address{Gneisenaustr. 18 \\ Hamburg 20253, Germany}
 \netaddress{marei (at) peitex dot de}
 \personalURL{peitex.de}
 
@@ -66,11 +72,11 @@ Small \TeX{} packages, typically developed in a single iteration rather than thr
 The Markdown package for \TeX{} also features a~set of regression tests. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
 \looseness=-1
 
-After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about 5.5 times). This had caused the tests to run for up to 15 hours using free GitHub-hosted runners, which was too slow to provide any benefit to developers.
+After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about a 5.5-fold increase). This caused the tests to take up to 15 hours to run, using free GitHub-hosted runners, too slow to provide any benefit to developers.
 
 In order to increase the testing speed, we implemented a novel technique for batching test files and we added self-hosted runners with up to 12 \acro{CPU}s. After these changes, the tests finish in about 15 minutes, which is a 60-fold speed increase and which makes the tests practically useful to developers.
 
-In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:definition-files} through \ref{sec:error-handling-strategies}, we describe the definition files, techniques, and strategies used in our framework. In Section~\ref{sec:implementation}, we describe the details of our implementation. In sections~\ref{sec:experiments} and \ref{sec:results}, we describe our experiments and their results. In Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future work.
+In this article, we describe the testing framework of the Markdown package. In sections~\ref{sec:definition-files} through~\ref{sec:error-handling-strategies}, we describe the definition files, techniques, and strategies used in our framework. In Section~\ref{sec:implementation}, we describe the details of our implementation. In sections~\ref{sec:experiments} and~\ref{sec:results}, we describe our experiments and their results. In~Section~\ref{sec:related-work}, we discuss prior work related to our framework. We conclude in Section~\ref{sec:conclusion} by summarizing our contributions and outlining future~work.
 
 \section{Definition files}
 \label{sec:definition-files}
@@ -107,7 +113,7 @@ An example format \texttt{plain} contains commands for the \hologo{pdfTeX}, \Hol
 \noindent
 \addtocounter{footnote}{1}%
 \footnotetext{%
-  The Markdown package uses Lua to parse markdown text. Whereas Lua\TeX{} can execute Lua code directly, other \TeX{} engines must use the shell of the operating system to execute Lua code. Since accessing the shell is a security risk, users must express their consent by writing \texttt{--shell-escape}.%
+  The Markdown package uses Lua to parse markdown text. Whereas Lua\TeX{} can execute Lua code directly, other \TeX{} engines must use the shell of the operating system to execute Lua code. Since accessing the shell is a security risk, users must express their consent by writing \texttt{-{}-shell-escape}.%
 }%
 \example[%
   \addtocounter{footnote}{-2}%
@@ -132,7 +138,7 @@ The format \texttt{plain} also contains two templates. One uses the \cs{markdown
 \subsection{Materialized templates and commands}
 \label{sec:materialized-templates-and-commands}
 
-During testing, the texts \texttt{TEST\_SETUP\_FILENAME} and \texttt{TEST\_INPUT\_FILENAME} in templates are replaced with names of auxiliary files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Additionally, the text {\small\texttt{undivert(TEST\_INPUT\_FILENAME)}} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
+During testing, the texts {\small\texttt{TEST\_SETUP\_FILENAME}} and {\small\texttt{TEST\_INPUT\_FILENAME}} in templates are replaced with names of auxiliary files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Also, the text {\small\texttt{undivert(TEST\_INPUT\_FILENAME)}} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
 
 Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-commands-and-templates} after it has been materialized with the test file \file{strike-through.test} from Section~\ref{sec:test-files}:
 
@@ -170,7 +176,7 @@ During testing, the materialized commands are executed. Each command produces a 
 While testing all combinations of test files, templates, and commands ensures comprehensive coverage of all potential configurations, it can be time-consuming.
 
 In this section, we describe the computational techniques of multiprocessing, the batching of test files, and how they increase the speed of testing in our framework.
-Furthermore, the batching of test files raises challenges with load balancing and the attribution of errors. We discuss the challenges and describe the techniques of batch size limiting and batch splitting that address these challenges.
+Furthermore, the batching of test files raises challenges with load balancing and the attribution of errors. We discuss the challenges and describe the techniques of batch size limiting and batch splitting to address them.
 
 \subsection{Multiprocessing}
 \label{sec:multiprocessing}
@@ -236,13 +242,7 @@ We can \emph{limit the batch size} so that all \acro{CPU}s are used:
 \smallskip
 \noindent
 \looseness=-1
-Limiting the batch size increases the speed of testing, because every used \acro{CPU} has less work to do.\footnote{However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost and more \acro{CPU}s are used. Therefore, limiting the batch size increases the speed of testing but decreases energy-efficiency.}
-
-\begin{listing*}
-\bigExample*[\input images/test.tex]{test.sh}
-\caption{The shell script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes materialized commands, c) compares the \texttt{.log} file against the expected output, and d) optionally updates the test file.}
-\label{lst:test.sh}
-\end{listing*}
+Limiting the batch size increases the speed of testing, because every used \acro{CPU} has less work to do.\footnote{However, the \acro{CPU}s do more work overall, because every used \acro{CPU} has to pay the initialization cost and more \acro{CPU}s are used. Therefore, limiting the batch size increases the speed of testing but decreases energy efficiency.}
 
 \subsection{Batch splitting}
 
@@ -334,6 +334,13 @@ Our framework will only update a test file if all templates and commands produce
 
 Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, see Listing~\ref{lst:test.sh}.
 
+\begin{listing*}
+\bigExample*[\input images/test.tex]{test.sh}
+\caption{The shell script \file{test.sh} that implemented the testing framework of the Markdown package before version 3.0.0. For each test file, \file{test.sh} a) materializes templates in a temporary directory, b) executes materialized commands, c) compares the \texttt{.log} file against the expected output, and d) optionally updates the test file.}
+\label{lst:test.sh}
+\vspace{-2pt} % avoid "float too large" warning
+\end{listing*}
+
 At first, \file{test.sh} processed test files sequentially and did not use the computational techniques from Section~\ref{sec:computational-techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
 \begin{verbatim}
 $ find -name '*.test' | parallel ./test.sh
@@ -365,7 +372,7 @@ We tested the Markdown package at Git commit \texttt{7613632} from August 21, 20
 
 To show the speed benefit of batch size limiting, we deactivated it in our experiments, thereby highlighting the speed reduction caused by its absence.
 
-We ran the experiments for 33 days on a shared Linux server with 400~GB of \acro{RAM} and 80 \acro{CPU}s, each at 2.1~GHz.
+We ran the experiments for 33 days on a shared \GNU/Linux server with 400~\acro{GB} of \acro{RAM} and 80 \acro{CPU}s, each at 2.1~GHz.
 
 \begin{figure}[b!]
 \input images/speed-tests.tex
@@ -379,12 +386,12 @@ We ran the experiments for 33 days on a shared Linux server with 400~GB of \acro
 Figure~\ref{fig:results} shows the results of our experiments. In this section, we discuss the results and how they relate to the three research questions outlined in the previous section.
 
 \subsection{Multiprocessing}
-With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect. Whereas with with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about 24-fold speed-up).\footnote{%
-The reason why we did not achieve the theoretical 32-fold speedup is likely due to tasks from other users on our server.%
+With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect: Whereas with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about 24-fold speed-up).\footnote{%
+The reason that we did not achieve the theoretical 32-fold speedup is likely tasks from other users on our server.%
 }
 
 \subsection{Batching of test files}
-With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is only 4~hours and 30~minutes with batch size 8 (about 6-fold speed-up), and only 1~hour and 20~minutes with batch size 512 (about 21-fold speed-up). This indicates that initialization dominates the testing time.
+With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size, up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is only 4~hours and 30~minutes with batch size 8 (about 6-fold speed-up), and 1~hour and 20~minutes with batch size 512 (about 21-fold speed-up). This indicates that initialization dominates the testing time.
 
 To better understand the relationship between the initialization and the testing time, we can solve the following series of equations:
 \begin{align*}
@@ -396,21 +403,21 @@ On the left-hand side of the equations, the variable $X$ stands for the mean tim
 The solution shows that whereas it takes a full $X\approx\text{8.47 seconds}$ to initialize a \TeX{} format, it takes only $Y\approx\text{0.41 seconds}$ to process a markdown text. In other words, without batching, 95\% of time is spent on initialization and only 5\% on actual testing; with batching, up to 97\% of time is spent on testing.
 
 \subsection{Batch size limiting}
-The speed improvements from multiprocessing and batching are additive up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about 161-fold speed-up).
+The speed improvements from multiprocessing and batching are additive, up to a point. Whereas with 1~\acro{CPU} and batch size 1, the median testing time is 27~hours and 2~minutes, it is only 10~minutes with 32~\acro{CPU}s and batch size 32 (about 161-fold speed-up).
 
 When the number of \acro{CPU}s multiplied by the batch size exceeds the number of test files (783), we cannot use all \acro{CPU}s and the testing speed decreases. Whereas with 32~\acro{CPU}s and batch size 16, the median testing time is only 11~minutes, it is 1~hour and 24~minutes with the same number of \acro{CPU}s and batch size 1024 (about 8-fold slow-down). Our framework prevents this effect by limiting the batch size.
 
 \section{Related work}
 \label{sec:related-work}
 
-Besides our framework, there exist other frameworks for the regression testing of \TeX{} packages. Furthermore, the computational techniques in our framework are often adapted from previous work in other fields.
+Besides our framework, there exist other frameworks for regression testing of \TeX{} packages. Furthermore, the computational techniques in our framework are often adapted from previous work in other fields.
 
 In this section, we discuss the regression testing framework of the l3build package management system and we compare it with our framework. Furthermore, we discuss the origin of the batching of test files and batch splitting.
 
 \subsection{The l3build package}
 The l3build package~\cite{mittelbach2014l3build, wright2015automating, wright2022l3build, latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
 
-Whereas our framework is written in Python, l3build is written in Lua. Each language presents its own set of strengths and weaknesses. On one hand, every modern installation of \TeX{} includes a Lua interpreter, which makes l3build more accessible for \TeX{} users compared to our framework. On the other hand, unlike Python, Lua has no built-in support for multiprocessing. Therefore, l3build users must use external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing, whereas our framework can use multiple \acro{CPU}s out-of-box.
+Whereas our framework is written in Python, l3build is written in Lua. Each language presents its own set of strengths and weaknesses. On one hand, every modern installation of \TeX{} includes a Lua interpreter, which makes l3build more accessible for \TeX{} users compared to our framework. On the other hand, unlike Python, Lua has no built-in support for multiprocessing. Therefore, l3build users must use external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing, whereas our framework can use multiple \acro{CPU}s out of the box.
 
 In our framework, each test file is designed to hold a single self-contained test that avoids modifying the global state. This design allows for straightforward grouping of tests into batches, where each test is isolated from others using \TeX{} groups, as we discussed in Section~\ref{sec:batching-of-test-files}.
 
@@ -419,12 +426,12 @@ In l3build, a single test file may contain multiple tests. These tests can be in
 Both our framework and l3build support the updating of test files~\cite[Section~2.7]{latex2023l3build}. This allows developers to automatically generate parts of test files when they make fundamental changes to the code or when they develop complex new features, as discussed in Section~\ref{sec:updating-test-files}.
 
 \subsection{Batching and batch splitting}
-The techniques of batching and batch splitting were perhaps first used with \TeX{} in the ARQMath competitions in large-scale indexing of math formulae.
+The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \ARQMath\ competitions in large-scale indexing of math formulae.
 
-In the first ARQMath competition, the \acro{MIRMU} team used the \LaTeX ML tool to convert \TeX{} formulae to the \acro{XML} format~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, a single error would cause the loss of an entire batch. Therefore, \acro{MIRMU} used batch splitting to recover correct formulae after an error~\cite{novotny2020arqmath}.
+In the first \ARQMath\ competition, the \acro{MIRMU} team used the \LaTeX\acro{ML} tool to convert \TeX{} formulae to \acro{XML}~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, a single error would cause the loss of an entire batch. Therefore, \acro{MIRMU} used batch splitting to recover correct formulae after an error~\cite{novotny2020arqmath}.
 % The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
 
-In the third ARQMath competition, the organizers used the same techniques to provide math formulae in the \acro{XML} format to all participants.
+In the third \ARQMath\ competition, the organizers used the same techniques to provide math formulae in the \acro{XML} format to all participants.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -454,10 +461,11 @@ We would like to gratefully acknowledge the Natural Language Processing Center a
 
 We also wish to extend our special thanks to Joseph Wright and Ben Frank for their invaluable insights and thorough review of our work. Their expertise and thoughtful feedback have been instrumental in shaping the final manuscript.
 
+\SetBibJustification{\raggedright \advance\itemsep by 2pt plus1pt minus1pt }
 \bibliographystyle{tugboat}
 \begingroup
 \gappto{\UrlBreaks}{\UrlOrds}
-\RaggedRight
+%\RaggedRight % let's not hyphenate titles
 \bibliography{main}
 \endgroup
 
