@@ -3,11 +3,11 @@
 \node[inner sep=0pt] (box) at (0,0) {
   \fcolorbox{red}{pink}{%
     \color{red}%
-    \file{first.test}%
+    \redFile{first.test}%
     \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
-    \file{second.test}%
+    \redFile{second.test}%
     \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
-    \file{third.test}%
+    \redFile{third.test}%
   }%
 };
 \draw[dashed] ($(box.south)+(0pt,-1.5pt)$) -- ($(box.north)+(0pt,1.5pt)$);
@@ -21,9 +21,9 @@
 \node[inner sep=0pt] (box) at (0,0) {
   \fcolorbox{red}{pink}{%
     \color{red}%
-    \file{second.test}%
+    \redFile{second.test}%
     \enspace\hspace{2\fboxsep}\hspace{2\fboxrule}%
-    \file{third.test}%
+    \redFile{third.test}%
   }%
 };
 \draw[dashed] ($(box.south)+(2.5pt,-1.5pt)$) -- ($(box.north)+(2.5pt,1.5pt)$);
@@ -36,7 +36,7 @@ ${}\rightarrow{}$%
 \hspace{1.5pt}%
 \fcolorbox{red}{pink}{%
   \color{red}%
-  \file{second.test}%
+  \redFile{second.test}%
 }%
 \enspace
 \fbox{%

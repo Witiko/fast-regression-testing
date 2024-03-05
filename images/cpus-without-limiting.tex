@@ -1,8 +1,8 @@
 \begin{tikzpicture}[every node/.style={inner sep=0pt}]
 \foreach \coord/\name in {{(0,0)}/first,{(2.7,0.3)}/second,{(5.4,0)}/third} {
-	\node (\name-cpu) at \coord {\includegraphics[scale=0.065]{images/cpu}};
+	\node (\name-cpu) at \coord {\input images/cpu\relax};
 }
-\node at ($(first-cpu.east) + (-21pt, 6pt)$) {
+\node at ($(first-cpu.east) + (-18pt, 6pt)$) {
   \begin{minipage}{1.5cm}
     \largeIcon{first.test, second.test, third.test}
   \end{minipage}%

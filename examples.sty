@@ -40,10 +40,24 @@
       { #1 }
   }
 \NewDocumentCommand
+  \redFile
+  { m }
+  {
+    \red_file:n
+      { #1 }
+  }
+\NewDocumentCommand
   \largeIcon
   { m }
   {
     \large_icon:n
+      { #1 }
+  }
+\NewDocumentCommand
+  \mediumIcon
+  { m }
+  {
+    \medium_icon:n
       { #1 }
   }
 \NewDocumentCommand
@@ -66,44 +80,88 @@
   }
 % Implementation
 \cs_new:Nn
-  \small_icon:n
+  \red_small_icon:n
   {
+    \group_begin:
+    \dim_gset:Nn
+      \g_icon_dim
+      { 10pt }
+    \tl_gset:Nn
+      \g_icon_style_tl
+      { light-red }
     \icon:n
       { #1 }
     \raisebox{-1.4pt}{\begin{tikzpicture}
-      \fill[white] (-0.15,-0.16) -- (0.14,-0.16) -- (0.14,0.09) -- (0.05,0.16) -- (-0.15,0.16) -- cycle;
       \node[inner~sep=0pt, outer~sep=0pt] at (0,0) {\tl_use:N \l_tmpa_tl};
     \end{tikzpicture}}
+    \group_end:
+  }
+\cs_new:Nn
+  \small_icon:n
+  {
+    \group_begin:
+    \dim_gset:Nn
+      \g_icon_dim
+      { 10pt }
+    \tl_gset:Nn
+      \g_icon_style_tl
+      { light }
+    \icon:n
+      { #1 }
+    \raisebox{-1.4pt}{\begin{tikzpicture}
+      \node[inner~sep=0pt, outer~sep=0pt] at (0,0) {\tl_use:N \l_tmpa_tl};
+    \end{tikzpicture}}
+    \group_end:
+  }
+\cs_new:Nn
+  \medium_icon:n
+  {
+    \group_begin:
+    \icon:n
+      { #1 }
+    \tl_gset:Nn
+      \g_icon_style_tl
+      { thin }
+    \dim_gset:Nn
+      \g_icon_dim
+      { 30pt }
+    \tl_use:N \l_tmpa_tl
+    \group_end:
   }
 \cs_new:Nn
   \large_icon:n
   {
     \icon:n
       { #1 }
+    \tl_gset:Nn
+      \g_icon_style_tl
+      { thin }
     \group_begin:
     \regex_match:nnTF
       { , }
       { #1 }
       {
-        \fontsize{30}{30}
-        \selectfont
-        \raisebox{-5.5pt}{\begin{tikzpicture}
-          \fill[white] (0.6,-0.35) rectangle (1.4,-1.35);
+        \dim_gset:Nn
+          \g_icon_dim
+          { 30pt }
+        \raisebox{0pt}{\begin{tikzpicture}
           \node[inner~sep=0pt, outer~sep=0pt] at (1,-0.85) {\tl_use:N \l_tmpa_tl};
-          \fill[white] (0.9,-0.05) rectangle (1.7,-1.05);
           \node[inner~sep=0pt, outer~sep=0pt] at (1.3,-0.55) {\tl_use:N \l_tmpa_tl};
-          \fill[white] (1.2,0.35) rectangle (2,-0.65);
           \node[inner~sep=0pt, outer~sep=0pt] at (1.6,-0.15) {\tl_use:N \l_tmpa_tl};
         \end{tikzpicture}}
-        \vspace{0.05cm}
       }
       {
-        \fontsize{45}{45}
-        \selectfont
+        \dim_gset:Nn
+          \g_icon_dim
+          { 45pt }
         \tl_use:N \l_tmpa_tl
       }
     \group_end:
   }
+\dim_new:N
+  \g_icon_dim
+\tl_new:N
+  \g_icon_style_tl
 \cs_new:Nn
   \icon:n
   {
@@ -113,12 +171,12 @@
       {
         \tl_set:Nn
           \l_tmpa_tl
-          { \faFileTextO }
+          { \includegraphics[height=\g_icon_dim]{icons/\g_icon_style_tl/file-lines} }
       }
       {
         \tl_set:Nn
           \l_tmpa_tl
-          { \faFileCodeO }
+          { \includegraphics[height=\g_icon_dim]{icons/\g_icon_style_tl/file-code} }
       }
   }
 \cs_new:Nn
@@ -127,7 +185,7 @@
     \centering
     \large_icon:n
       { #1 }
-    \\ [5pt]
+    \\
     \tl_set:Nn
       \l_tmpa_tl
       { #1 }
@@ -144,6 +202,14 @@
     \exp_args:NV
       \texttt
       \l_tmpa_tl
+  }
+\cs_new:Nn
+  \red_file:n
+  {
+    \red_small_icon:n
+      { #1 }
+    \,
+    \texttt { #1 }
   }
 \cs_new:Nn
   \file:n
@@ -231,7 +297,7 @@
     \hspace{-0.215cm}
     \begin{minipage}[m]{0.1\linewidth}
     \centering
-    \raisebox{-43pt}{$+$}
+    \raisebox{-30.5pt}{$+$}
     \end{minipage}
     \hspace{-0.215cm}
     \begin{minipage}[t]{0.375\linewidth}
@@ -241,6 +307,6 @@
     \hspace{-0.215cm}
     \begin{minipage}[m]{0.1\linewidth}
     \centering
-    \raisebox{-53pt}{\scalebox{-1.5}[1.5]{\rotatebox[origin=m]{90}{$\Lsh$}}}
+    \raisebox{-40pt}{\scalebox{-1.5}[1.5]{\rotatebox[origin=m]{90}{$\Lsh$}}}
     \end{minipage}
   }

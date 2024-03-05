@@ -1,8 +1,7 @@
 \begin{tikzpicture}[every node/.style={inner sep=0pt}]
 \foreach \coord/\name in {{(0,0)}/first,{(2.7,0.3)}/second,{(5.4,0)}/third} {
-	\node (cpu) at \coord {\includegraphics[scale=0.065]{images/cpu}};
-    \fill[white] ($(cpu)+(4pt, -30pt)$) -- ($(cpu)+(4pt, -1pt)$) -- ($(cpu)+(20pt, -1pt)$) -- ($(cpu)+(28pt, -7pt)$) -- ($(cpu)+(28pt, -30pt)$) -- cycle;
-	\node[anchor=north] (file) at ($(cpu)+(16pt, 0pt)$) {{\fontsize{30}{30}\selectfont\faFileTextO}};
+	\node (cpu) at \coord {\input images/cpu\relax};
+	\node[anchor=north] (file) at ($(cpu)+(16pt, 0pt)$) {\mediumIcon{\name.test}};
 	\node[below=.75ex,font=\ttfamily] at (file.south) {\name.test};
 }
 \end{tikzpicture}%
