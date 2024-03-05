@@ -69,7 +69,7 @@ In this article, we describe a novel technique for batching test files that redu
 \section{Introduction}
 Small \TeX{} packages, typically developed in a single iteration rather than through ongoing updates, can depend on user feedback to maintain the code. However, this approach has its limitations. Larger projects, especially those that are continuously developed, require a more robust solution. Automated regression tests are crucial in these cases. They ensure that any changes, either in the code itself or its external dependencies, do not alter the expected behavior of the code.
 
-The Markdown package for \TeX{} features a~set of regression tests. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
+The Markdown package for \TeX{} also features a~set of regression tests. These tests, designed to be completed in just a few minutes, provide immediate feedback and are automatically conducted on any updates submitted to the package's GitHub repository.
 \looseness=-1
 
 After the implementation of the CommonMark standard in version 3.0.0 of the Markdown package, the number of tests increased from 143 to 783 (about a 5.5-fold increase). This caused the tests to take up to 15 hours to run, using free GitHub-hosted runners, too slow to provide any benefit to developers.
@@ -93,7 +93,7 @@ The Markdown package converts markdown text to \TeX{} commands. To validate the 
 
 A \emph{test file} consists of a) \TeX{} code that configures the Markdown package, b) markdown text, and c)~the expected output in the \texttt{.log} file.
 
-As an example, \file{strike-through.test} tests the strike-through syntax extension:
+An example test file \file{strike-through.test} tests the strike-through syntax extension:
 
 \smallskip
 \noindent
@@ -113,7 +113,7 @@ An example format \texttt{plain} contains commands for the \hologo{pdfTeX}, \Hol
 \noindent
 \addtocounter{footnote}{1}%
 \footnotetext{%
-  The Markdown package uses Lua to parse markdown text. Whereas Lua\TeX{} can execute Lua code directly, other \TeX{} engines must use the operating system shell to execute Lua code. Since accessing the shell is a security risk, users must express their consent by writing \texttt{-{}-shell-escape}.%
+  The Markdown package uses Lua to parse markdown text. Whereas Lua\TeX{} can execute Lua code directly, other \TeX{} engines must use the shell of the operating system to execute Lua code. Since accessing the shell is a security risk, users must express their consent by writing \texttt{-{}-shell-escape}.%
 }%
 \example[%
   \addtocounter{footnote}{-2}%
@@ -332,7 +332,7 @@ Our framework will only update a test file if all templates and commands produce
 \section{Implementation}
 \label{sec:implementation}
 
-Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, shown in Listing~\ref{lst:test.sh}.
+Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, see Listing~\ref{lst:test.sh}.
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
@@ -386,12 +386,12 @@ We ran the experiments for 33 days on a shared \GNU/Linux server with 400~\acro{
 Figure~\ref{fig:results} shows the results of our experiments. In this section, we discuss the results and how they relate to the three research questions outlined in the previous section.
 
 \subsection{Multiprocessing}
-With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect: with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about 24-fold speed-up).\footnote{%
+With batch size 1, the testing speed scales almost linearly with the number of \acro{CPU}s, as we would expect: Whereas with 1~\acro{CPU}, the median testing time is 27~hours and 2~minutes, it is only 1~hour and 6~minutes with 32~\acro{CPU}s (about 24-fold speed-up).\footnote{%
 The reason that we did not achieve the theoretical 32-fold speedup is likely tasks from other users on our server.%
 }
 
 \subsection{Batching of test files}
-With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size, up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is 4~hours and 30~minutes with batch size 8 (about 6-fold speed-up), and 1~hour and 20~minutes with batch size 512 (about 21-fold speed-up). This indicates that initialization dominates the testing time.
+With 1~\acro{CPU}, the testing speed also scales almost linearly with the batch size, up to a point. Whereas with batch size 1, the median testing time is 27~hours and 2~minutes, it is only 4~hours and 30~minutes with batch size 8 (about 6-fold speed-up), and 1~hour and 20~minutes with batch size 512 (about 21-fold speed-up). This indicates that initialization dominates the testing time.
 
 To better understand the relationship between the initialization and the testing time, we can solve the following series of equations:
 \begin{align*}
@@ -415,7 +415,7 @@ Besides our framework, there exist other frameworks for regression testing of \T
 In this section, we discuss the regression testing framework of the l3build package management system and we compare it with our framework. Furthermore, we discuss the origin of the batching of test files and batch splitting.
 
 \subsection{The l3build package}
-The l3build package~\cite{mittelbach2014l3build, latex2023l3build, wright2022l3build, wright2015automating} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
+The l3build package~\cite{mittelbach2014l3build, wright2015automating, wright2022l3build, latex2023l3build} provides a comprehensive system for \TeX{} package management that also includes a regression testing framework.
 
 Whereas our framework is written in Python, l3build is written in Lua. Each language presents its own set of strengths and weaknesses. On one hand, every modern installation of \TeX{} includes a Lua interpreter, which makes l3build more accessible for \TeX{} users compared to our framework. On the other hand, unlike Python, Lua has no built-in support for multiprocessing. Therefore, l3build users must use external tools like \acro{GNU}~Parallel to use multiple \acro{CPU}s for testing, whereas our framework can use multiple \acro{CPU}s out of the box.
 
@@ -428,7 +428,7 @@ Both our framework and l3build support the updating of test files~\cite[Section~
 \subsection{Batching and batch splitting}
 The techniques of batching and batch splitting were perhaps first used with \TeX{} in the \ARQMath\ competitions in large-scale indexing of math formulae.
 
-In the first \ARQMath\ competition, the \acro{MIRMU} team used \LaTeX\acro{ML} to convert \TeX{} formulae to \acro{XML}~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, a single error would cause the loss of an entire batch. Therefore, \acro{MIRMU} used batch splitting to recover correct formulae after an error~\cite{novotny2020arqmath}.
+In the first \ARQMath\ competition, the \acro{MIRMU} team used the \LaTeX\acro{ML} tool to convert \TeX{} formulae to \acro{XML}~\cite[Section~2.2]{novotny2020three}. Due to speed issues when processing each formula separately, \acro{MIRMU} processed them in batches. However, a single error would cause the loss of an entire batch. Therefore, \acro{MIRMU} used batch splitting to recover correct formulae after an error~\cite{novotny2020arqmath}.
 % The combination of batching and batch splitting allowed \acro{MIRMU} to convert the formulae quickly and losslessly.
 
 In the third \ARQMath\ competition, the organizers used the same techniques to provide math formulae in the \acro{XML} format to all participants.
