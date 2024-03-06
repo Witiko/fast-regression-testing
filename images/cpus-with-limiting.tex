@@ -2,9 +2,8 @@
 \kern 1pt
 \begin{tikzpicture}[every node/.style={inner sep=0pt}]
 \foreach \coord/\name in {{(0,0)}/first,{(2.7,0.3)}/second,{(5.4,0)}/third} {
-	\node (\name-cpu) at \coord {\includegraphics[scale=0.065]{images/cpu}};
-    \fill[white] ($(\name-cpu)+(5.75pt, -10pt)$) -- ($(\name-cpu)+(5.75pt, 19pt)$) -- ($(\name-cpu)+(21.75pt, 19pt)$) -- ($(\name-cpu)+(29.75pt, 13pt)$) -- ($(\name-cpu)+(29.75pt, -10pt)$) -- cycle;
-	\node[anchor=north] at ($(\name-cpu)+(17.75pt, 20pt)$) {{\fontsize{30}{30}\selectfont\faFileTextO}};
+	\node (\name-cpu) at \coord {\input images/cpu\relax};
+	\node[anchor=north] at ($(\name-cpu)+(8.5pt, 25pt)$) {\mediumIcon{\name.test}};
 }
 \node[below=.3ex] at (first-cpu.south) { used };
 \node[below=.3ex] at (second-cpu.south) { used };
