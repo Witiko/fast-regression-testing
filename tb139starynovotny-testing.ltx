@@ -92,7 +92,7 @@ The Markdown package converts markdown text to \TeX{} commands. To validate the 
 
 A \emph{test file} consists of a) \TeX{} code that configures the Markdown package, b) markdown text, and c)~the expected output in the \texttt{.log} file.
 
-An example test file \texttt{strike-through.test} tests the strike-through syntax extension:
+As an example, \texttt{strike-through.test} tests the strike-through syntax extension:
 
 \smallskip
 \noindent
@@ -260,7 +260,7 @@ Here is how we would split a batch of test files \texttt{first.test}, \texttt{se
 
 \smallskip
 \noindent
-First, we try processing all files together but encounter a fatal error. Therefore, we divide the files into two groups: one with \texttt{first.test} and the other with \texttt{second.test} and \texttt{third.test}. Processing these separately, we again face a fatal error in the group with \texttt{second.test} and \texttt{third.test}. We then split this group into two individual files, \texttt{second.test} and \texttt{third.test}, and we process them. The fatal error occurs with \texttt{second.test}, which we identify as the cause of the error.
+First, we try processing all files together but we encounter a fatal error. Therefore, we divide the files into two groups: one with \texttt{first.test} and the other with \texttt{second.test} and \texttt{third.test}. Processing these separately, we again face a fatal error in the group with \texttt{second.test} and \texttt{third.test}. We then split this group into two individual files, \texttt{second.test} and \texttt{third.test}, and we process them. The fatal error occurs with \texttt{second.test}, which we identify as the cause of the error.
 
 When only one test file out of $N$ files in a batch causes a fatal error, batch splitting executes at most $2 (\log_2 N + 1)$ commands. This is less than or equal to $N$ for sufficiently large batch sizes $N\geq 8$. Therefore, in the presence of no more than a few fatal errors, batching is still faster than sequential processing.
 
