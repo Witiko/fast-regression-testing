@@ -92,7 +92,7 @@ The Markdown package converts markdown text to \TeX{} commands. To validate the 
 
 A \emph{test file} consists of a) \TeX{} code that configures the Markdown package, b) markdown text, and c)~the expected output in the \texttt{.log} file.
 
-An example test file \file{strike-through.test} tests the strike-through syntax extension:
+An example test file \texttt{strike-through.test} tests the strike-through syntax extension:
 
 \smallskip
 \noindent
@@ -139,7 +139,7 @@ The format \texttt{plain} also contains two templates. One uses the \cs{markdown
 
 During testing, the texts {\small\texttt{TEST\_SETUP\_FILENAME}} and {\small\texttt{TEST\_INPUT\_FILENAME}} in templates are replaced with names of auxiliary files that contain the \TeX{} code and the markdown text parts of a test file, respectively. Also, the text {\small\texttt{undivert(TEST\_INPUT\_FILENAME)}} is replaced with the literal markdown text from the test file. After the replacement, we say that the template has been \emph{materialized}.
 
-Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-commands-and-templates} after it has been materialized with the test file \file{strike-through.test} from Section~\ref{sec:test-files}:
+Here is the template \texttt{verbatim.tex.m4} from Section~\ref{sec:formats-commands-and-templates} after it has been materialized with the test file \texttt{strike-through.test} from Section~\ref{sec:test-files}:
 
 \medskip
 \noindent
@@ -157,7 +157,7 @@ Here is the template \file{verbatim.tex.m4} from Section~\ref{sec:formats-comman
 
 After a template has been materialized, the text \texttt{TEST\_FILENAME} in all commands is replaced with the filename of the materialized template. After the replacement, the command has also been materialized.
 
-Here are the commands \file{COMMANDS.m4} from Section~\ref{sec:formats-commands-and-templates} after they have been materialized:
+Here are the commands \texttt{COMMANDS.m4} from Section~\ref{sec:formats-commands-and-templates} after they have been materialized:
 
 \smallskip
 \noindent
@@ -248,7 +248,7 @@ Limiting the batch size increases the speed of testing, because every used \acro
 \looseness=-1
 When we test batches of test files, a \texttt{.log} file is split into sections corresponding to individual test files and compared with the expected test file outputs. However, if a fatal error occurs, the \texttt{.log} file may become malformed. To find the test file responsible for the error, we repeatedly \emph{split the batch} using binary search.
 
-Here is how we would split a batch of test files \file{first.test}, \file{second.test}, and \file{third.test}, where \file{second.test} causes a fatal error:
+Here is how we would split a batch of test files \texttt{first.test}, \texttt{second.test}, and \texttt{third.test}, where \texttt{second.test} causes a fatal error:
 
 \smallskip
 \noindent
@@ -260,7 +260,7 @@ Here is how we would split a batch of test files \file{first.test}, \file{second
 
 \smallskip
 \noindent
-First, we try processing all files together but encounter a fatal error. Therefore, we divide the files into two groups: one with \file{first.test} and the other with \file{second.test} and \file{third.test}. Processing these separately, we again face a fatal error in the group with \file{second.test} and \file{third.test}. We then split this group into two individual files, \file{second.test} and \file{third.test}, and we process them. The fatal error occurs with \file{second.test}, which we identify as the cause of the error.
+First, we try processing all files together but encounter a fatal error. Therefore, we divide the files into two groups: one with \texttt{first.test} and the other with \texttt{second.test} and \texttt{third.test}. Processing these separately, we again face a fatal error in the group with \texttt{second.test} and \texttt{third.test}. We then split this group into two individual files, \texttt{second.test} and \texttt{third.test}, and we process them. The fatal error occurs with \texttt{second.test}, which we identify as the cause of the error.
 
 When only one test file out of $N$ files in a batch causes a fatal error, batch splitting executes at most $2 (\log_2 N + 1)$ commands. This is less than or equal to $N$ for sufficiently large batch sizes $N\geq 8$. Therefore, in the presence of no more than a few fatal errors, batching is still faster than sequential processing.
 
@@ -284,7 +284,7 @@ In the practice of test-driven development, before adding a new feature, develop
 
 In order to increase the speed of development, tests should fail fast to provide immediate feedback. Therefore, developers can configure our framework to start with the new test files, which are the most likely to fail, and stop at the first error rather than wait until all tests have finished.
 
-For example, imagine a \TeX{} package with two test files: \file{first.test} and \file{second.test}. For simplicity, the package has only one format with one template and with three commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines. Before the development of a new feature, developers add a new test file \file{third.test} and they run the tests with the following results:
+For example, imagine a \TeX{} package with two test files: \texttt{first.test} and \texttt{second.test}. For simplicity, the package has only one format with one template and with three commands for the \hologo{pdfTeX}, \Hologo{XeTeX}, and \Hologo{LuaTeX} engines. Before the development of a new feature, developers add a new test file \texttt{third.test} and they run the tests with the following results:
 
 \smallskip
 \noindent
@@ -296,7 +296,7 @@ For example, imagine a \TeX{} package with two test files: \file{first.test} and
 
 \smallskip
 \noindent
-Since \file{third.test} was new, it was tested first and immediately failed, providing immediate feedback to developers. This is how we test all updates submitted to the GitHub repository of the Markdown package.
+Since \texttt{third.test} was new, it was tested first and immediately failed, providing immediate feedback to developers. This is how we test all updates submitted to the GitHub repository of the Markdown package.
 
 \subsection{Maintainer-oriented testing}
 
@@ -331,7 +331,7 @@ Our framework will only update a test file if all templates and commands produce
 \section{Implementation}
 \label{sec:implementation}
 
-Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, see Listing~\ref{lst:test.sh}.
+Before Markdown 3.0.0, our framework was implemented by a Bash script \texttt{test.sh}, see Listing~\ref{lst:test.sh}.
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
@@ -340,11 +340,11 @@ Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test
 \vspace{-2pt} % avoid "float too large" warning
 \end{listing*}
 
-At first, \file{test.sh} processed test files sequentially and did not use the computational techniques from Section~\ref{sec:computational-techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
+At first, \texttt{test.sh} processed test files sequentially and did not use the computational techniques from Section~\ref{sec:computational-techniques} to increase the speed of testing. Since Markdown 2.4.0, we used the \acro{GNU} Parallel command-line tool~\cite{tange2011gnu} to implement multiprocessing:
 \begin{verbatim}
 $ find -name '*.test' | parallel ./test.sh
 \end{verbatim}
-Out of the error handling strategies from Section~\ref{sec:error-handling-strategies}, \file{test.sh} could only update test files.
+Out of the error handling strategies from Section~\ref{sec:error-handling-strategies}, \texttt{test.sh} could only update test files.
 
 While Bash is convenient for simple programs, more complicated programs are better written in a~more expressive language. In Markdown 3.0.0, we rewrote our framework from Bash to Python~3~\cite{novotny2023implement}.
 
