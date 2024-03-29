@@ -8,6 +8,7 @@
 
 \documentclass[final]{ltugboat}
 \usepackage[T1]{fontenc} % tt \_
+\pdfsuppresswarningpagegroup=1
 \def\ARQMath{\acro{ARQM}ath}
 \usepackage{amsmath}
 \usepackage{microtype}
@@ -179,7 +180,7 @@ Furthermore, the batching of test files raises challenges with load balancing an
 
 \subsection{Multiprocessing}
 \label{sec:multiprocessing}
-Whereas \TeX{} only uses a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Therefore, we can increase the speed of testing by using \emph{multiprocessing}, where each \acro{CPU} processes a different test file:
+Whereas \TeX{} uses only a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Therefore, we can increase the speed of testing by using \emph{multiprocessing}, where each \acro{CPU} processes a different test file:
 
 \smallskip
 \noindent
@@ -324,14 +325,14 @@ At a glance, the summary shows that the errors are related to the \Hologo{XeTeX}
 
 Although test-driven development is well-suited to adding new features, fundamental changes to the code may require that existing test files are updated as well. Furthermore, writing test files before the development of a feature can be difficult, especially for complex features with incomplete requirements.
 
-In order to increase the speed of development, developers can configure our framework to \emph{update test files} instead of failing. Developers can make fundamental changes and our framework will update the expected outputs in test files to match the actual output. Furthermore, developers can also develop a~feature, write partial test files for the feature that only contain the \TeX{} code and markdown text, and use our framework to fill in the expected output. Then, developers can review the changes and determine whether they are correct.
+In order to increase the speed of development, developers can configure our framework to \emph{update test files} instead of failing. Developers can make fundamental changes and our framework will update the expected outputs in test files to match the actual output. Furthermore, developers can also develop a~feature, write partial test files for the feature that contain only the \TeX{} code and markdown text, and use our framework to fill in the expected output. Then, developers can review the changes and determine whether they are correct.
 
-Our framework will only update a test file if all templates and commands produce consistent outputs. In the example from the previous section, the command for the \Hologo{XeTeX} engine failed for all test files, whereas the other commands did not. Therefore, our framework would not update any test files and fail.
+Our framework will update a test file only if all templates and commands produce consistent outputs. In the example from the previous section, the command for the \Hologo{XeTeX} engine failed for all test files, whereas the other commands did not. Therefore, our framework would not update any test files and fail.
 
 \section{Implementation}
 \label{sec:implementation}
 
-Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}, see Listing~\ref{lst:test.sh}.
+Before Markdown 3.0.0, our framework was implemented by a Bash script \file{test.sh}; see Listing~\ref{lst:test.sh}.
 
 \begin{listing*}
 \bigExample*[\input images/test.tex]{test.sh}
@@ -441,7 +442,7 @@ In this study, we explored techniques for speeding up the regression testing of 
 The lessons learned from our work are as follows:
 
 \begin{itemize}
-\item Whereas \TeX{} only uses a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Multiprocessing can increase testing speed by using these \acro{CPU}s.
+\item Whereas \TeX{} uses only a single \acro{CPU}, modern \acro{PC}s can contain several \acro{CPU}s. Multiprocessing can increase testing speed by using these \acro{CPU}s.
 \item Writing small isolated test files is convenient for authors but carries a high initialization cost during testing. For \TeX{} packages such as the Markdown package, where tests are easy to isolate, the batching of test files can be used to recover the initialization cost.
 \item Whereas developers need tests to fail as fast as possible, maintainers benefit from a comprehensive summary of all errors.
 \end{itemize}
@@ -458,13 +459,16 @@ No wolves were harmed in the making of this article.
 \section*{Acknowledgements}
 We would like to gratefully acknowledge the Natural Language Processing Center at the Faculty of Informatics, Masaryk University, Brno, who kindly provided computational resources for our experiments.
 
-We also wish to extend our special thanks to Joseph Wright, Ben Frank, and Karl Berry for their invaluable insights and thorough review of our work. Their expertise and thoughtful feedback have been instrumental in shaping the final manuscript.
+We also wish to extend our special thanks to Joseph Wright, Ben Frank,
+Barbara Beeton,
+and Karl Berry for their invaluable insights and thorough review of our work. Their expertise and thoughtful feedback have been instrumental in shaping the final manuscript.
 
 \SetBibJustification{\raggedright \advance\itemsep by 2pt plus1pt minus1pt }
 \bibliographystyle{tugboat}
 \begingroup
 \gappto{\UrlBreaks}{\UrlOrds}
 %\RaggedRight % let's not hyphenate titles
+\small
 \bibliography{starynovotny-testing}
 \endgroup
 
