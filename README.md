@@ -19,7 +19,7 @@ typeset article will be created.
 Use the following BibLaTeX source code to cite the article:
 
 ``` bib
-@article{starynovotny2024fast
+@article{starynovotny2024fast,
   author = {V\'it Novotn\'y, Star\'y and Marei Peischl},
   title = {Fast Regression Testing of TeX Packages},
   subtitle = {Multiprocessing and Batching},
